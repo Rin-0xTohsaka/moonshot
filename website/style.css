@@ -1,0 +1,341 @@
+:root {
+  --text: #ffffff;
+  --accent: #7287fd;
+  --background: #000011;  /* Darker background for better star visibility */
+  --section-height: 100vh;
+  --z-index-bg: 10000;
+}
+
+#home .content {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+}
+
+.text-container {
+  flex: 1;
+  padding-right: 2rem;
+}
+
+.lottie-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.lottie-container dotlottie-player {
+  width: 800px;
+  height: 800px;
+}
+
+@media (min-width: 769px) {
+  .lottie-container dotlottie-player {
+    width: 500px;
+    height: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  #home .content {
+    flex-direction: column;
+    text-align: center; /* Center align text for mobile */
+  }
+
+  .text-container {
+    padding-right: 0;
+    text-align: center; /* Center align text for mobile */
+  }
+
+  .lottie-container {
+    padding-top: 2rem; /* Add some space between text and animation on mobile */
+  }
+
+  .navbar {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .menu {
+    display: none; /* Hide the menu by default */
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 51, 0.9);
+  }
+
+  .menu.active {
+    display: flex; /* Show the menu when the 'active' class is added */
+  }
+
+  .menu li {
+    margin: 0.5rem 0;
+  }
+
+  #mobile-menu-toggle {
+    display: block;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text);
+    cursor: pointer;
+    margin-left: auto; /* Moves the toggle to the right */
+  }
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: monospace;
+  background-color: var(--background);
+  color: var(--text);
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+#stars-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--z-index-bg);
+  overflow: hidden;
+  pointer-events: none; /* Prevent interaction with the stars */
+}
+
+.star {
+  position: absolute;
+  background-color: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: twinkle 3s infinite alternate;
+}
+
+.star:nth-child(3n) {
+  width: 1px;
+  height: 1px;
+}
+
+.star:nth-child(3n+1) {
+  width: 2px;
+  height: 2px;
+}
+
+.star:nth-child(3n+2) {
+  width: 3px;
+  height: 3px;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+.shooting-star {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background-color: white;
+  box-shadow: 0 0 8px white;
+  border-radius: 50%;
+  animation: shoot linear;
+}
+
+@keyframes shoot {
+  0% {
+    transform: translate(-100%, 0) rotate(45deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(100vw, -100vh) rotate(45deg);
+    opacity: 0;
+  }
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 17, 0.8);  /* Adjusted to match new background */
+  padding: 1rem 2rem;
+  z-index: 1000;
+}
+
+.menu {
+  display: flex;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  justify-content: center;
+}
+
+.menu li {
+  margin: 0 1rem;
+}
+
+.menu a {
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.menu a:hover {
+  color: var(--accent);
+}
+
+#mobile-menu-toggle {
+  display: none;
+}
+
+main {
+  padding-top: 60px;
+}
+
+.section {
+  height: var(--section-height);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.section-divider {
+  width: 100%;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.header {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.button-container {
+  margin-top: 2rem;
+}
+
+.button {
+  display: inline-block;
+  border: 2px solid var(--text);
+  background: transparent;
+  color: var(--text);
+  font-family: monospace;
+  font-weight: 800;
+  padding: 0.5rem 1rem;
+  position: relative;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.1s, background-color 0.3s;
+}
+
+.button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.button:active {
+  transform: translate(4px, 4px);
+  background-color: var(--text);
+  color: var(--background);
+}
+
+.button::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: -4px;
+  bottom: -4px;
+  background-color: var(--text);
+  z-index: -1;
+}
+
+.chevrons {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+
+.chevrons i {
+  font-size: 2rem;
+  color: var(--text);
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+#debridgeWidget {
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: rgba(0, 0, 17, 0.8);  /* Adjusted to match new background */
+}
+
+footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between; /* Ensures space between menu and toggle */
+    align-items: center;
+  }
+
+  .menu {
+    display: none; /* Hide the menu by default */
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 51, 0.9);
+  }
+
+  .menu.active {
+    display: flex; /* Show the menu when the 'active' class is added */
+  }
+
+  .menu li {
+    margin: 0.5rem 0;
+  }
+
+  #mobile-menu-toggle {
+    display: block;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text);
+    cursor: pointer;
+    margin-left: auto; /* Moves the toggle to the right */
+  }
+}

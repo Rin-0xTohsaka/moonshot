@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Art Space Scene with Twinkling and Shooting Stars</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000033;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .scene {
+            position: relative;
+            width: 300px;
+            height: 300px;
+        }
+        .moon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .astronaut {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            animation: float 10s infinite linear;
+        }
+        @keyframes float {
+            0% { transform: rotate(0deg) translateX(100px) rotate(0deg); }
+            100% { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
+        }
+        .stars, .shooting-stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite alternate;
+        }
+        @keyframes twinkle {
+            0% { opacity: 0.2; }
+            100% { opacity: 1; }
+        }
+        .shooting-star {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: white;
+            border-radius: 50%;
+            animation: shoot 1s linear;
+        }
+        @keyframes shoot {
+            0% { transform: translateX(-100%) translateY(0); opacity: 1; }
+            100% { transform: translateX(100%) translateY(100px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="scene">
+        <div class="stars"></div>
+        <div class="shooting-stars"></div>
+        <svg class="moon" width="100" height="100" viewBox="0 0 10 10">
+            <rect x="3" y="2" width="4" height="6" fill="#C0C0C0" />
+            <rect x="2" y="3" width="6" height="4" fill="#C0C0C0" />
+            <rect x="4" y="4" width="2" height="2" fill="#808080" />
+        </svg>
+        <svg class="astronaut" width="40" height="40" viewBox="0 0 10 10">
+            <rect x="3" y="2" width="4" height="5" fill="#FFFFFF" />
+            <rect x="2" y="3" width="6" height="3" fill="#FFFFFF" />
+            <rect x="4" y="3" width="2" height="2" fill="#000000" />
+            <rect x="3" y="7" width="1" height="2" fill="#FFFFFF" />
+            <rect x="6" y="7" width="1" height="2" fill="#FFFFFF" />
+        </svg>
+    </div>
+    <script>
+        const starsContainer = document.querySelector('.stars');
+        const shootingStarsContainer = document.querySelector('.shooting-stars');
+        const numStars = 50;
+
+        function createStar() {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animationDelay = `${Math.random() * 2}s`;
+            starsContainer.appendChild(star);
+        }
+
+        function createShootingStar() {
+            const shootingStar = document.createElement('div');
+            shootingStar.classList.add('shooting-star');
+            shootingStar.style.top = `${Math.random() * 50}%`;
+            shootingStar.style.left = '-5px';
+            shootingStarsContainer.appendChild(shootingStar);
+
+            shootingStar.addEventListener('animationend', () => {
+                shootingStar.remove();
+            });
+        }
+
+        for (let i = 0; i < numStars; i++) {
+            createStar();
+        }
+
+        function shootingStar() {
+            createShootingStar();
+            const nextShootingStarIn = Math.random() * 10000 + 5000; // Between 5 and 15 seconds
+            setTimeout(shootingStar, nextShootingStarIn);
+        }
+
+        shootingStar();
+    </script>
+</body>
+</html>
