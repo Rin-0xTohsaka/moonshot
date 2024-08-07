@@ -24,7 +24,7 @@ export function createInfoPane(game, home) {
 
     const level = document.createElement('div');
     level.className = 'stat level';
-    level.innerHTML = 'LEVEL: 1';
+    level.innerHTML = 'LEVEL: Pluto'; // Set initial level name
 
     statsContainer.appendChild(lives);
     statsContainer.appendChild(score);
@@ -41,8 +41,8 @@ export function createInfoPane(game, home) {
         setScore: function(s) {
             score.innerHTML = 'SCORE: ' + s;
         },
-        setLevel: function(_level) {
-            level.innerHTML = 'LEVEL: ' + _level;
+        setLevel: function(levelName) {
+            level.innerHTML = 'LEVEL: ' + levelName;
         },
         getPane: function() {
             return pane;

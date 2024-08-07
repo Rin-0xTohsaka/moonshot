@@ -13,6 +13,7 @@ import { createHighScores } from '../ui/highScores.js';
 import { createLevel } from './level.js';
 import { createLogger } from '../utils/logger.js';
 import { collision } from '../utils/collision.js';
+import { createLevelManager } from './levelManager.js';  // Add this import
 
 export function createGame(home) {
     console.log('Creating game object');
@@ -28,6 +29,7 @@ export function createGame(home) {
         highScores: null,
         level: null,
         pulse: null,
+        levelManager: null,  // Add this line
     };
 
 
@@ -41,6 +43,7 @@ export function createGame(home) {
     game.overlays = createOverlays();
     game.highScores = createHighScores(game);
     game.level = createLevel(game);
+    game.levelManager = createLevelManager(game);  // Add this line
 
 
     console.log('Game object created:', game);
@@ -55,7 +58,7 @@ export function createGame(home) {
         const speed = ASTEROID_SPEED;
         const hspeed = ASTEROID_SPEED / 2;
     
-        game.level.levelUp();
+        game.levelManager.setupLevel();  // Set up the initial level
     
         let bullets = [];
         let last_fire_state = false;
@@ -65,7 +68,14 @@ export function createGame(home) {
         game.overlays.add(createStars());
     
         game.pulse = setInterval(function() {
+            console.log('--- New Frame ---');
             console.log('Game loop running');
+
+            if (game.player.getLives() <= 0) {
+                clearInterval(game.pulse);
+                game.gameOver(false);
+                return;
+            }
         
             console.log('Player state:', {
                 isDead: game.player.isDead(),
@@ -80,6 +90,7 @@ export function createGame(home) {
     
             ctx.save();
             ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+            console.log('Canvas cleared');  // After clearing the canvas
     
             // Player movement and drawing
             if (!game.player.isDead()) {
@@ -99,7 +110,7 @@ export function createGame(home) {
     
                 game.player.move();
                 game.player.draw(ctx);
-                console.log('Player position:', game.player.getPosition());
+                console.log('Player drawn at:', game.player.getPosition());  // After drawing the player
             }
     
             // Bullet handling
@@ -179,29 +190,34 @@ export function createGame(home) {
             ctx.restore();
     
             // Level up logic
-            if (game.asteroids.length === 0 && last_asteroid_count !== 0) {
-                setTimeout(() => {
-                    game.level.levelUp();
-                    console.log('Level up!');
-                }, LEVEL_TIMEOUT);
+            if (game.levelManager.isLevelComplete()) {
+                if (game.levelManager.startNextLevel()) {
+                    game.levelManager.setupLevel();
+                    game.log.debug('Starting next level: ' + game.levelManager.getCurrentLevel().name);
+                } else {
+                    game.gameOver(true); // true indicates game won
+                    clearInterval(game.pulse);
+                }
             }
     
-            last_asteroid_count = game.asteroids.length;
+
     
             // Draw overlays
             game.overlays.draw(ctx);
+            console.log('Overlays drawn');  // After drawing overlays
     
             // Update the info pane
             game.info.setLives(game.player.getLives());
             game.info.setScore(game.player.getScore());
-            game.info.setLevel(game.level.getLevel());
+            game.info.setLevel(game.levelManager.getCurrentLevel().name);
             console.log('Frame rendered');
+            console.log('--- Frame End ---');
         }, FRAME_PERIOD);
     };
 
-    game.gameOver = function() {
-        game.log.debug('Game over!');
-        console.log('Game over called');
+    game.gameOver = function(won = false) {
+        game.log.debug(won ? 'Congratulations! You won!' : 'Game over!');
+        console.log(won ? 'Game won!' : 'Game over called');
 
         if (game.player.getScore() > 0) {
             game.highScores.addScore('Player', game.player.getScore());
@@ -261,6 +277,7 @@ function createStars() {
 
     return {
         draw: function(ctx) {
+            ctx.fillStyle = 'white';  // Set the star color to white
             for (let i = 0; i < stars.length; i++) {
                 ctx.fillRect(stars[i][0], stars[i][1], 1, 1);
             }

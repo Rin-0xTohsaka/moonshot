@@ -78,7 +78,8 @@ export function createPlayer(game) {
     player.draw = (ctx) => {
         console.log('Drawing player', {
             position: player.position,
-            direction: player.direction
+            direction: player.direction,
+            imageLoaded: player.image.complete
         });
         
         ctx.save();
@@ -102,6 +103,7 @@ export function createPlayer(game) {
             ctx.closePath();
             ctx.fillStyle = 'white';
             ctx.fill();
+            console.log('Fallback triangle drawn');
         }
 
         if (player.invincible) {

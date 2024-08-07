@@ -56,6 +56,9 @@ export function createAsteroids(game) {
             return asteroids.length;
         },
         getIterator: () => asteroids,
+        clear: () => {
+            asteroids.length = 0;
+        },
         generationCount: (_gen) => {
             let total = 0;
             for (let i = 0; i < asteroids.length; i++) {
