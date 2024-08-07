@@ -10,11 +10,10 @@ import {
     INVINCIBLE_TIMEOUT,
     PLAYER_LIVES,
     POINTS_PER_SHOT,
-    PLAYER_PATH,
-    PLAYER_RADIUS
+    PLAYER_RADIUS,
+    PLAYER_IMAGE_PATH
 } from '../config/playerConfig.js';
 import { move } from '../utils/movement.js';
-import { drawPath } from '../utils/drawing.js';
 import { createBullet } from './bullet.js';
 
 export function createPlayer(game) {
@@ -27,6 +26,12 @@ export function createPlayer(game) {
         lastRez: null,
         lives: PLAYER_LIVES,
         score: 0,
+        image: new Image(),
+    };
+
+    player.image.src = PLAYER_IMAGE_PATH;
+    player.image.onload = () => {
+        game.log.debug('Player image loaded');
     };
 
     player.getPosition = () => player.position;
@@ -73,16 +78,45 @@ export function createPlayer(game) {
     player.draw = (ctx) => {
         console.log('Drawing player', {
             position: player.position,
-            direction: player.direction,
-            path: PLAYER_PATH
+            direction: player.direction
         });
-        let color = '#fff';
+        
+        ctx.save();
+        ctx.translate(player.position[0], player.position[1]);
+        ctx.rotate(player.direction + Math.PI / 2); // Adjust rotation as needed
+
+        if (player.image.complete) {
+            ctx.drawImage(
+                player.image, 
+                -PLAYER_RADIUS, 
+                -PLAYER_RADIUS, 
+                PLAYER_RADIUS * 2, 
+                PLAYER_RADIUS * 2
+            );
+        } else {
+            // Fallback to drawing a triangle if image isn't loaded
+            ctx.beginPath();
+            ctx.moveTo(10, 0);
+            ctx.lineTo(-5, 5);
+            ctx.lineTo(-5, -5);
+            ctx.closePath();
+            ctx.fillStyle = 'white';
+            ctx.fill();
+        }
+
         if (player.invincible) {
             const dt = ((new Date()) - player.lastRez) / 200;
-            const c = Math.floor(Math.cos(dt) * 16).toString(16);
-            color = `#${c}${c}${c}`;
+            const alpha = Math.cos(dt) * 0.5 + 0.5;
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(0, 0, PLAYER_RADIUS + 5, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
         }
-        drawPath(ctx, player.position, player.direction, 1, PLAYER_PATH, color);
+
+        ctx.restore();
         console.log('Player draw complete');
     };
 
