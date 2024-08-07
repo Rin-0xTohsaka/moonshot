@@ -13,7 +13,7 @@ import { createHighScores } from '../ui/highScores.js';
 import { createLevel } from './level.js';
 import { createLogger } from '../utils/logger.js';
 import { collision } from '../utils/collision.js';
-import { createLevelManager } from './levelManager.js';  // Add this import
+import { createLevelManager } from './levelManager.js';
 import { createLevelIntro } from './levelIntro.js';
 
 export function createGame(home) {
@@ -30,9 +30,8 @@ export function createGame(home) {
         highScores: null,
         level: null,
         pulse: null,
-        levelManager: null,  // Add this line
+        levelManager: null,
     };
-
 
     game.log = createLogger(game);
     game.playfield = createPlayfield(game, home);
@@ -44,9 +43,8 @@ export function createGame(home) {
     game.overlays = createOverlays();
     game.highScores = createHighScores(game);
     game.level = createLevel(game);
-    game.levelManager = createLevelManager(game);  // Add this line
+    game.levelManager = createLevelManager(game);
     game.levelIntro = createLevelIntro(game);
-
 
     console.log('Game object created:', game);
 
@@ -56,19 +54,17 @@ export function createGame(home) {
         console.log('Canvas context:', ctx);
         ctx.fillStyle = 'white';
         ctx.strokeStyle = 'white';
-    
-        const speed = ASTEROID_SPEED;
-        const hspeed = ASTEROID_SPEED / 2;
-    
+
         let bullets = [];
         let last_fire_state = false;
         let last_asteroid_count = 0;
         let extra_lives = 0;
-    
+
         game.overlays.add(createStars());
-    
+
         function startLevel() {
             const currentLevel = game.levelManager.getCurrentLevel();
+            game.info.setLevel(currentLevel.name);  // Update the level name in the info pane
             game.levelIntro.showIntro(currentLevel, currentLevel.objective, () => {
                 console.log('Level intro complete, setting up level...');
                 game.levelManager.setupLevel();
@@ -76,37 +72,36 @@ export function createGame(home) {
                 startGameLoop();
             });
         }
-    
+
         function startGameLoop() {
             console.log('Game loop starting...');
             game.pulse = setInterval(function() {
                 console.log('--- New Frame ---');
                 console.log('Game loop running');
-    
+
                 if (game.player.getLives() <= 0) {
                     clearInterval(game.pulse);
                     game.gameOver(false);
                     return;
                 }
-    
+
                 console.log('Player state:', {
                     isDead: game.player.isDead(),
                     position: game.player.getPosition(),
                     velocity: game.player.getVelocity()
                 });
-                
+
                 console.log('Asteroids:', game.asteroids.length);
                 const kill_asteroids = [];
                 const new_asteroids = [];
                 const kill_bullets = [];
-        
+
                 ctx.save();
                 ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-                console.log('Canvas cleared');  // After clearing the canvas
-        
+                console.log('Canvas cleared');
+
                 // Player movement and drawing
                 if (!game.player.isDead()) {
-                    // Handle player movement based on key state
                     if (game.keyState.getState(UP)) {
                         game.player.thrust(THRUST_ACCEL);
                         console.log('Player thrusting');
@@ -119,12 +114,12 @@ export function createGame(home) {
                         game.player.rotate(ROTATE_SPEED);
                         console.log('Player rotating right');
                     }
-        
+
                     game.player.move();
                     game.player.draw(ctx);
-                    console.log('Player drawn at:', game.player.getPosition());  // After drawing the player
+                    console.log('Player drawn at:', game.player.getPosition());
                 }
-        
+
                 // Bullet handling
                 const fire_state = game.keyState.getState(FIRE);
                 if (fire_state && (fire_state != last_fire_state) && (bullets.length < MAX_BULLETS)) {
@@ -135,7 +130,7 @@ export function createGame(home) {
                     }
                 }
                 last_fire_state = fire_state;
-        
+
                 // Move and draw bullets
                 console.log('Active bullets:', bullets.length);
                 for (let i = 0; i < bullets.length; i++) {
@@ -148,19 +143,19 @@ export function createGame(home) {
                         console.log('Bullet position:', bullets[i].getPosition());
                     }
                 }
-        
+
                 // Remove old bullets
                 for (let i = kill_bullets.length - 1; i >= 0; i--) {
                     bullets.splice(kill_bullets[i], 1);
                 }
-        
+
                 // Asteroid handling
                 const asteroids = game.asteroids.getIterator();
                 for (let i = 0; i < asteroids.length; i++) {
                     asteroids[i].move();
                     asteroids[i].draw(ctx);
                     console.log('Asteroid position:', asteroids[i].getPosition());
-        
+
                     // Check for collisions with bullets
                     for (let j = 0; j < bullets.length; j++) {
                         if (collision(bullets[j], asteroids[i])) {
@@ -172,14 +167,15 @@ export function createGame(home) {
                             break;
                         }
                     }
-        
+
                     // Check for collision with player
                     if (!game.player.isDead() && !game.player.isInvincible() && collision(game.player, asteroids[i])) {
                         game.player.die();
                         console.log('Collision: player and asteroid');
+                        game.info.setLives(game.player.getLives());
                     }
                 }
-        
+
                 // Remove destroyed asteroids and create new ones
                 for (let i = kill_asteroids.length - 1; i >= 0; i--) {
                     const asteroidIndex = kill_asteroids[i];
@@ -188,67 +184,77 @@ export function createGame(home) {
                     new_asteroids.push(...newAsteroids);
                     asteroids.splice(asteroidIndex, 1);
                     game.player.addScore(ASTEROID_SCORE);
+                    game.info.setScore(game.player.getScore());
                     console.log('Asteroid destroyed, new asteroids created:', newAsteroids.length);
                 }
-        
+
                 // Add new asteroids
                 for (let i = 0; i < new_asteroids.length; i++) {
                     game.asteroids.push(new_asteroids[i]);
                 }
-    
+
                 console.log('End of game loop. Asteroid count:', game.asteroids.length);
-    
-        
+
                 ctx.restore();
-    
+
                 // Level up logic
                 if (game.levelManager.isLevelComplete()) {
                     clearInterval(game.pulse);
                     if (game.levelManager.startNextLevel()) {
                         startLevel();
                     } else {
-                        game.gameOver(true); // true indicates game won
+                        game.gameOver(true);
                     }
                 }
-    
+
                 console.log('Frame rendered');
                 console.log('--- Frame End ---');
             }, FRAME_PERIOD);
         }
-    
-        startLevel(); // Start the first level
-    };
 
+        startLevel();
+    };
 
     game.gameOver = function(won = false) {
         game.log.debug(won ? 'Congratulations! You won!' : 'Game over!');
         console.log(won ? 'Game won!' : 'Game over called');
-
+    
+        // Stop any ongoing intervals or timeouts
+        clearInterval(game.pulse);
+    
         if (game.player.getScore() > 0) {
             game.highScores.addScore('Player', game.player.getScore());
             console.log('High score added:', game.player.getScore());
         }
-
-        game.overlays.add({
-            draw: function(ctx) {
-                ctx.font = '30px System, monospace';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.setTransform(1, 0, 0, 1, 0, 0);
-                ctx.fillText('GAME OVER', GAME_WIDTH / 2, GAME_HEIGHT / 2);
-
-                const scores = game.highScores.getScores();
-                ctx.font = '12px System, monospace';
-                for (let i = 0; i < scores.length; i++) {
-                    ctx.fillText(
-                        `${scores[i].name}   ${scores[i].score}`,
-                        GAME_WIDTH / 2,
-                        GAME_HEIGHT / 2 + 20 + 14 * i
-                    );
-                }
-                console.log('Game over screen drawn');
-            },
-        });
+    
+        // Clear the playfield
+        const ctx = game.playfield.getContext('2d');
+        ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    
+        // Render Game Over and Score
+        ctx.font = '30px System, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'white';
+        ctx.fillText('GAME OVER', GAME_WIDTH / 2, GAME_HEIGHT / 2 - 60);
+    
+        ctx.font = '20px System, monospace';
+        ctx.fillText(`Score: ${game.player.getScore()}`, GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20);
+    
+        // Display High Scores, capped at 10
+        const scores = game.highScores.getScores().slice(0, 11);  // Limit to top 10 scores
+        ctx.font = '16px System, monospace';
+        ctx.fillText('High Scores:', GAME_WIDTH / 2, GAME_HEIGHT / 2 + 20);
+        for (let i = 0; i < scores.length; i++) {
+            ctx.fillText(
+                `${i + 1}. ${scores[i].name} - ${scores[i].score}`,
+                GAME_WIDTH / 2,
+                GAME_HEIGHT / 2 + 50 + 20 * i
+            );
+        }
+        console.log('Game over screen drawn');
     };
 
     return game;
@@ -264,12 +270,6 @@ function createPlayfield(game, home) {
     console.log('Playfield created:', canvas);
     console.log('Canvas dimensions:', canvas.width, canvas.height);
 
-    // Test drawing
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'red';
-    ctx.fillRect(0, 0, 50, 50);
-    console.log('Test rectangle drawn');
-
     return canvas;
 }
 
@@ -282,7 +282,7 @@ function createStars() {
 
     return {
         draw: function(ctx) {
-            ctx.fillStyle = 'white';  // Set the star color to white
+            ctx.fillStyle = 'white';
             for (let i = 0; i < stars.length; i++) {
                 ctx.fillRect(stars[i][0], stars[i][1], 1, 1);
             }
