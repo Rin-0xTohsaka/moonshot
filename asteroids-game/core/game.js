@@ -14,6 +14,7 @@ import { createLevel } from './level.js';
 import { createLogger } from '../utils/logger.js';
 import { collision } from '../utils/collision.js';
 import { createLevelManager } from './levelManager.js';  // Add this import
+import { createLevelIntro } from './levelIntro.js';
 
 export function createGame(home) {
     console.log('Creating game object');
@@ -44,6 +45,7 @@ export function createGame(home) {
     game.highScores = createHighScores(game);
     game.level = createLevel(game);
     game.levelManager = createLevelManager(game);  // Add this line
+    game.levelIntro = createLevelIntro(game);
 
 
     console.log('Game object created:', game);
@@ -58,8 +60,6 @@ export function createGame(home) {
         const speed = ASTEROID_SPEED;
         const hspeed = ASTEROID_SPEED / 2;
     
-        game.levelManager.setupLevel();  // Set up the initial level
-    
         let bullets = [];
         let last_fire_state = false;
         let last_asteroid_count = 0;
@@ -67,153 +67,158 @@ export function createGame(home) {
     
         game.overlays.add(createStars());
     
-        game.pulse = setInterval(function() {
-            console.log('--- New Frame ---');
-            console.log('Game loop running');
-
-            if (game.player.getLives() <= 0) {
-                clearInterval(game.pulse);
-                game.gameOver(false);
-                return;
-            }
-        
-            console.log('Player state:', {
-                isDead: game.player.isDead(),
-                position: game.player.getPosition(),
-                velocity: game.player.getVelocity()
+        function startLevel() {
+            const currentLevel = game.levelManager.getCurrentLevel();
+            game.levelIntro.showIntro(currentLevel, currentLevel.objective, () => {
+                console.log('Level intro complete, setting up level...');
+                game.levelManager.setupLevel();
+                console.log('Level setup complete, starting game loop...');
+                startGameLoop();
             });
-            
-            console.log('Asteroids:', game.asteroids.length);
-            const kill_asteroids = [];
-            const new_asteroids = [];
-            const kill_bullets = [];
+        }
     
-            ctx.save();
-            ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-            console.log('Canvas cleared');  // After clearing the canvas
+        function startGameLoop() {
+            console.log('Game loop starting...');
+            game.pulse = setInterval(function() {
+                console.log('--- New Frame ---');
+                console.log('Game loop running');
     
-            // Player movement and drawing
-            if (!game.player.isDead()) {
-                // Handle player movement based on key state
-                if (game.keyState.getState(UP)) {
-                    game.player.thrust(THRUST_ACCEL);
-                    console.log('Player thrusting');
-                }
-                if (game.keyState.getState(LEFT)) {
-                    game.player.rotate(-ROTATE_SPEED);
-                    console.log('Player rotating left');
-                }
-                if (game.keyState.getState(RIGHT)) {
-                    game.player.rotate(ROTATE_SPEED);
-                    console.log('Player rotating right');
+                if (game.player.getLives() <= 0) {
+                    clearInterval(game.pulse);
+                    game.gameOver(false);
+                    return;
                 }
     
-                game.player.move();
-                game.player.draw(ctx);
-                console.log('Player drawn at:', game.player.getPosition());  // After drawing the player
-            }
-    
-            // Bullet handling
-            const fire_state = game.keyState.getState(FIRE);
-            if (fire_state && (fire_state != last_fire_state) && (bullets.length < MAX_BULLETS)) {
-                const b = game.player.fire();
-                if (b) {
-                    bullets.push(b);
-                    console.log('Bullet fired:', b.getPosition());
+                console.log('Player state:', {
+                    isDead: game.player.isDead(),
+                    position: game.player.getPosition(),
+                    velocity: game.player.getVelocity()
+                });
+                
+                console.log('Asteroids:', game.asteroids.length);
+                const kill_asteroids = [];
+                const new_asteroids = [];
+                const kill_bullets = [];
+        
+                ctx.save();
+                ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+                console.log('Canvas cleared');  // After clearing the canvas
+        
+                // Player movement and drawing
+                if (!game.player.isDead()) {
+                    // Handle player movement based on key state
+                    if (game.keyState.getState(UP)) {
+                        game.player.thrust(THRUST_ACCEL);
+                        console.log('Player thrusting');
+                    }
+                    if (game.keyState.getState(LEFT)) {
+                        game.player.rotate(-ROTATE_SPEED);
+                        console.log('Player rotating left');
+                    }
+                    if (game.keyState.getState(RIGHT)) {
+                        game.player.rotate(ROTATE_SPEED);
+                        console.log('Player rotating right');
+                    }
+        
+                    game.player.move();
+                    game.player.draw(ctx);
+                    console.log('Player drawn at:', game.player.getPosition());  // After drawing the player
                 }
-            }
-            last_fire_state = fire_state;
-    
-            // Move and draw bullets
-            console.log('Active bullets:', bullets.length);
-            for (let i = 0; i < bullets.length; i++) {
-                if (bullets[i].getAge() > MAX_BULLET_AGE) {
-                    kill_bullets.push(i);
-                } else {
-                    bullets[i].birthday();
-                    bullets[i].move();
-                    bullets[i].draw(ctx);
-                    console.log('Bullet position:', bullets[i].getPosition());
+        
+                // Bullet handling
+                const fire_state = game.keyState.getState(FIRE);
+                if (fire_state && (fire_state != last_fire_state) && (bullets.length < MAX_BULLETS)) {
+                    const b = game.player.fire();
+                    if (b) {
+                        bullets.push(b);
+                        console.log('Bullet fired:', b.getPosition());
+                    }
                 }
-            }
+                last_fire_state = fire_state;
+        
+                // Move and draw bullets
+                console.log('Active bullets:', bullets.length);
+                for (let i = 0; i < bullets.length; i++) {
+                    if (bullets[i].getAge() > MAX_BULLET_AGE) {
+                        kill_bullets.push(i);
+                    } else {
+                        bullets[i].birthday();
+                        bullets[i].move();
+                        bullets[i].draw(ctx);
+                        console.log('Bullet position:', bullets[i].getPosition());
+                    }
+                }
+        
+                // Remove old bullets
+                for (let i = kill_bullets.length - 1; i >= 0; i--) {
+                    bullets.splice(kill_bullets[i], 1);
+                }
+        
+                // Asteroid handling
+                const asteroids = game.asteroids.getIterator();
+                for (let i = 0; i < asteroids.length; i++) {
+                    asteroids[i].move();
+                    asteroids[i].draw(ctx);
+                    console.log('Asteroid position:', asteroids[i].getPosition());
+        
+                    // Check for collisions with bullets
+                    for (let j = 0; j < bullets.length; j++) {
+                        if (collision(bullets[j], asteroids[i])) {
+                            game.log.debug('You shot an asteroid!');
+                            console.log('Collision: bullet and asteroid');
+                            bullets.splice(j, 1);
+                            j--;
+                            kill_asteroids.push(i);
+                            break;
+                        }
+                    }
+        
+                    // Check for collision with player
+                    if (!game.player.isDead() && !game.player.isInvincible() && collision(game.player, asteroids[i])) {
+                        game.player.die();
+                        console.log('Collision: player and asteroid');
+                    }
+                }
+        
+                // Remove destroyed asteroids and create new ones
+                for (let i = kill_asteroids.length - 1; i >= 0; i--) {
+                    const asteroidIndex = kill_asteroids[i];
+                    const asteroid = asteroids[asteroidIndex];
+                    const newAsteroids = game.asteroids.createChildAsteroids(asteroid, ASTEROID_CHILDREN);
+                    new_asteroids.push(...newAsteroids);
+                    asteroids.splice(asteroidIndex, 1);
+                    game.player.addScore(ASTEROID_SCORE);
+                    console.log('Asteroid destroyed, new asteroids created:', newAsteroids.length);
+                }
+        
+                // Add new asteroids
+                for (let i = 0; i < new_asteroids.length; i++) {
+                    game.asteroids.push(new_asteroids[i]);
+                }
     
-            // Remove old bullets
-            for (let i = kill_bullets.length - 1; i >= 0; i--) {
-                bullets.splice(kill_bullets[i], 1);
-            }
+                console.log('End of game loop. Asteroid count:', game.asteroids.length);
     
-            // Asteroid handling
-            const asteroids = game.asteroids.getIterator();
-            for (let i = 0; i < asteroids.length; i++) {
-                asteroids[i].move();
-                asteroids[i].draw(ctx);
-                console.log('Asteroid position:', asteroids[i].getPosition());
+        
+                ctx.restore();
     
-                // Check for collisions with bullets
-                for (let j = 0; j < bullets.length; j++) {
-                    if (collision(bullets[j], asteroids[i])) {
-                        game.log.debug('You shot an asteroid!');
-                        console.log('Collision: bullet and asteroid');
-                        bullets.splice(j, 1);
-                        j--;
-                        kill_asteroids.push(i);
-                        break;
+                // Level up logic
+                if (game.levelManager.isLevelComplete()) {
+                    clearInterval(game.pulse);
+                    if (game.levelManager.startNextLevel()) {
+                        startLevel();
+                    } else {
+                        game.gameOver(true); // true indicates game won
                     }
                 }
     
-                // Check for collision with player
-                if (!game.player.isDead() && !game.player.isInvincible() && collision(game.player, asteroids[i])) {
-                    game.player.die();
-                    console.log('Collision: player and asteroid');
-                }
-            }
+                console.log('Frame rendered');
+                console.log('--- Frame End ---');
+            }, FRAME_PERIOD);
+        }
     
-            // Remove destroyed asteroids and create new ones
-            for (let i = kill_asteroids.length - 1; i >= 0; i--) {
-                const asteroidIndex = kill_asteroids[i];
-                const asteroid = asteroids[asteroidIndex];
-                const newAsteroids = game.asteroids.createChildAsteroids(asteroid, ASTEROID_CHILDREN);
-                new_asteroids.push(...newAsteroids);
-                asteroids.splice(asteroidIndex, 1);
-                game.player.addScore(ASTEROID_SCORE);
-                console.log('Asteroid destroyed, new asteroids created:', newAsteroids.length);
-            }
-    
-            // Add new asteroids
-            for (let i = 0; i < new_asteroids.length; i++) {
-                game.asteroids.push(new_asteroids[i]);
-            }
-
-            console.log('End of game loop. Asteroid count:', game.asteroids.length);
-
-    
-            ctx.restore();
-    
-            // Level up logic
-            if (game.levelManager.isLevelComplete()) {
-                if (game.levelManager.startNextLevel()) {
-                    game.levelManager.setupLevel();
-                    game.log.debug('Starting next level: ' + game.levelManager.getCurrentLevel().name);
-                } else {
-                    game.gameOver(true); // true indicates game won
-                    clearInterval(game.pulse);
-                }
-            }
-    
-
-    
-            // Draw overlays
-            game.overlays.draw(ctx);
-            console.log('Overlays drawn');  // After drawing overlays
-    
-            // Update the info pane
-            game.info.setLives(game.player.getLives());
-            game.info.setScore(game.player.getScore());
-            game.info.setLevel(game.levelManager.getCurrentLevel().name);
-            console.log('Frame rendered');
-            console.log('--- Frame End ---');
-        }, FRAME_PERIOD);
+        startLevel(); // Start the first level
     };
+
 
     game.gameOver = function(won = false) {
         game.log.debug(won ? 'Congratulations! You won!' : 'Game over!');
