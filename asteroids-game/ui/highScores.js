@@ -21,5 +21,10 @@ export function createHighScores(game) {
             game.log.debug('Saving high scores.');
             localStorage.setItem('high-scores', JSON.stringify(scores));
         },
+        clear: function() {
+            scores = [];
+            localStorage.removeItem('high-scores');
+            game.log.debug('High scores cleared.');
+        }
     };
 }

@@ -27,6 +27,9 @@ export function createPlayer(game) {
         lives: PLAYER_LIVES,
         score: 0,
         image: new Image(),
+        shieldActive: false,
+        bulletUpgradeActive: false,
+        bulletUpgradeUses: 4, // Maximum uses for bullet upgrade
     };
 
     player.image.src = PLAYER_IMAGE_PATH;
@@ -81,7 +84,7 @@ export function createPlayer(game) {
             direction: player.direction,
             imageLoaded: player.image.complete
         });
-        
+
         ctx.save();
         ctx.translate(player.position[0], player.position[1]);
         ctx.rotate(player.direction + Math.PI / 2); // Adjust rotation as needed
@@ -118,6 +121,15 @@ export function createPlayer(game) {
             ctx.globalAlpha = 1;
         }
 
+        // Draw shield if active
+        if (player.shieldActive) {
+            ctx.beginPath();
+            ctx.arc(0, 0, PLAYER_RADIUS + 10, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.7)';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
         ctx.restore();
         console.log('Player draw complete');
     };
@@ -125,9 +137,32 @@ export function createPlayer(game) {
     player.isDead = () => player.dead;
     player.isInvincible = () => player.invincible;
 
-    player.extraLife = () => {
+    player.addLife = () => {
         game.log.debug('Woo, extra life!');
         player.lives++;
+    };
+
+    player.activateShield = () => {
+        if (!player.shieldActive) {
+            player.shieldActive = true;
+            console.log('Shield activated!');
+            setTimeout(() => {
+                player.shieldActive = false;
+                console.log('Shield deactivated!');
+            }, 10000); // Shield lasts for 10 seconds
+        }
+    };
+
+    player.upgradeBullets = () => {
+        if (player.bulletUpgradeUses > 0 && !player.bulletUpgradeActive) {
+            player.bulletUpgradeActive = true;
+            player.bulletUpgradeUses--;
+            console.log('Bullet upgrade activated!');
+            setTimeout(() => {
+                player.bulletUpgradeActive = false;
+                console.log('Bullet upgrade deactivated!');
+            }, 15000); // Bullet upgrade lasts for 15 seconds
+        }
     };
 
     player.die = () => {
@@ -168,7 +203,18 @@ export function createPlayer(game) {
 
             player.lowerScore(POINTS_PER_SHOT);
 
-            return createBullet(game, _pos, _dir);
+            if (player.bulletUpgradeActive) {
+                // Bullet ripple effect
+                const bullets = [];
+                const numBullets = 12; // Number of bullets in ripple
+                for (let i = 0; i < numBullets; i++) {
+                    const angle = (i * 2 * Math.PI) / numBullets;
+                    bullets.push(createBullet(game, _pos, angle));
+                }
+                return bullets;
+            } else {
+                return createBullet(game, _pos, _dir);
+            }
         }
     };
 

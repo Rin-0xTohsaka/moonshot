@@ -11,7 +11,9 @@ export function createAsteroid(game, _gen) {
         position: [0, 0],
         velocity: [0, 0],
         direction: 0,
-        generation: _gen
+        generation: _gen,
+        frozen: false, // New property to track if the asteroid is frozen
+        frozenTimeout: null // To store the timeout ID for unfreezing
     };
 
     asteroid.getPosition = () => asteroid.position;
@@ -28,7 +30,9 @@ export function createAsteroid(game, _gen) {
     asteroid.getGeneration = () => asteroid.generation;
 
     asteroid.move = () => {
-        move(asteroid.position, asteroid.velocity);
+        if (!asteroid.frozen) {
+            move(asteroid.position, asteroid.velocity);
+        }
     };
 
     asteroid.draw = (ctx) => {
@@ -40,6 +44,17 @@ export function createAsteroid(game, _gen) {
         });
         drawPath(ctx, asteroid.position, asteroid.direction, asteroid.generation, ASTEROID_PATH);
         console.log('Asteroid draw complete');
+    };
+
+    asteroid.freeze = (duration) => {
+        asteroid.frozen = true;
+        if (asteroid.frozenTimeout) {
+            clearTimeout(asteroid.frozenTimeout); // Clear any existing timeout
+        }
+        asteroid.frozenTimeout = setTimeout(() => {
+            asteroid.frozen = false;
+            console.log('Asteroid unfrozen:', asteroid);
+        }, duration);
     };
 
     return asteroid;
@@ -97,6 +112,12 @@ export function createAsteroids(game) {
                 }
             }
             return children;
+        },
+        freezeAsteroids: () => {
+            asteroids.forEach(asteroid => {
+                asteroid.freeze(5000); // Freeze each asteroid for 5 seconds
+            });
+            console.log('All asteroids frozen');
         }
     };
 }

@@ -15,6 +15,9 @@ import { createLogger } from '../utils/logger.js';
 import { collision } from '../utils/collision.js';
 import { createLevelManager } from './levelManager.js';
 import { createLevelIntro } from './levelIntro.js';
+import { createPowerUps } from './powerups.js';
+import { createSoundManager } from '../utils/soundManager.js'; // Import sound manager
+import { createPowerUpMenu } from './powerUpMenu.js'; // Import power-up menu
 
 export function createGame(home) {
     console.log('Creating game object');
@@ -31,9 +34,17 @@ export function createGame(home) {
         level: null,
         pulse: null,
         levelManager: null,
+        powerUps: null,
+        sound: null, // Sound manager
+        powerUpMenu: null, // Power-up menu
+        state: 'playing', // Initial state
     };
 
+    // Initialize components
     game.log = createLogger(game);
+    game.sound = createSoundManager();
+    game.sound.startBackgroundMusic();
+    game.powerUps = createPowerUps(game);
     game.playfield = createPlayfield(game, home);
     game.info = createInfoPane(game, home);
     game.player = createPlayer(game);
@@ -45,6 +56,7 @@ export function createGame(home) {
     game.level = createLevel(game);
     game.levelManager = createLevelManager(game);
     game.levelIntro = createLevelIntro(game);
+    game.powerUpMenu = createPowerUpMenu(game); // Initialize power-up menu
 
     console.log('Game object created:', game);
 
@@ -57,19 +69,41 @@ export function createGame(home) {
 
         let bullets = [];
         let last_fire_state = false;
-        let last_asteroid_count = 0;
-        let extra_lives = 0;
 
         game.overlays.add(createStars());
 
         function startLevel() {
             const currentLevel = game.levelManager.getCurrentLevel();
-            game.info.setLevel(currentLevel.name);  // Update the level name in the info pane
+            game.info.setLevel(currentLevel.name);
             game.levelIntro.showIntro(currentLevel, currentLevel.objective, () => {
                 console.log('Level intro complete, setting up level...');
                 game.levelManager.setupLevel();
+                setupLevelPowerUps(currentLevel);  // Set up power-ups for the level
                 console.log('Level setup complete, starting game loop...');
                 startGameLoop();
+            });
+        }
+
+        function setupLevelPowerUps(level) {
+            // Reset power-ups
+            Object.keys(game.powerUps.getPowerUpTypes()).forEach(type => game.powerUps.addPowerUp(type, 0));
+
+            // Define power-ups for each level
+            const levelPowerUps = {
+                "Pluto": { "shield": 2, "bulletUpgrade": 2 },
+                "Neptune": { "extraLife": 1, "freeze": 1 },
+                "Uranus": { "shield": 1, "bulletUpgrade": 1 },
+                "Saturn": { "extraLife": 1, "freeze": 2 },
+                "Jupiter": { "shield": 2, "bulletUpgrade": 1, "freeze": 1 },
+                "Mars": { "extraLife": 1, "shield": 1 },
+                "Venus": { "bulletUpgrade": 2, "freeze": 1 },
+                "Mercury": { "extraLife": 1, "shield": 1, "freeze": 1, "bulletUpgrade": 1 },
+                "Earth": { "extraLife": 1, "shield": 2, "freeze": 1, "bulletUpgrade": 2 }
+            };
+
+            const powerUpsForLevel = levelPowerUps[level.name];
+            Object.keys(powerUpsForLevel).forEach(type => {
+                game.powerUps.addPowerUp(type, powerUpsForLevel[type]);
             });
         }
 
@@ -78,6 +112,11 @@ export function createGame(home) {
             game.pulse = setInterval(function() {
                 console.log('--- New Frame ---');
                 console.log('Game loop running');
+
+                if (game.state === 'paused') {
+                    game.powerUpMenu.updateAndDraw(ctx); // Draw the menu while paused
+                    return; // Skip the rest of the loop
+                }
 
                 if (game.player.getLives() <= 0) {
                     clearInterval(game.pulse);
@@ -88,7 +127,7 @@ export function createGame(home) {
                 console.log('Player state:', {
                     isDead: game.player.isDead(),
                     position: game.player.getPosition(),
-                    velocity: game.player.getVelocity()
+                    velocity: game.player.getVelocity(),
                 });
 
                 console.log('Asteroids:', game.asteroids.length);
@@ -100,7 +139,6 @@ export function createGame(home) {
                 ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
                 console.log('Canvas cleared');
 
-                // Player movement and drawing
                 if (!game.player.isDead()) {
                     if (game.keyState.getState(UP)) {
                         game.player.thrust(THRUST_ACCEL);
@@ -120,18 +158,19 @@ export function createGame(home) {
                     console.log('Player drawn at:', game.player.getPosition());
                 }
 
-                // Bullet handling
                 const fire_state = game.keyState.getState(FIRE);
-                if (fire_state && (fire_state != last_fire_state) && (bullets.length < MAX_BULLETS)) {
-                    const b = game.player.fire();
-                    if (b) {
-                        bullets.push(b);
-                        console.log('Bullet fired:', b.getPosition());
+                if (fire_state && (fire_state !== last_fire_state) && (bullets.length < MAX_BULLETS)) {
+                    const firedBullets = game.player.fire();
+                    if (Array.isArray(firedBullets)) {
+                        bullets.push(...firedBullets);
+                    } else if (firedBullets) {
+                        bullets.push(firedBullets);
                     }
+                    game.sound.play('laser');  // Play laser sound on fire
+                    console.log('Bullet fired:', firedBullets);
                 }
                 last_fire_state = fire_state;
 
-                // Move and draw bullets
                 console.log('Active bullets:', bullets.length);
                 for (let i = 0; i < bullets.length; i++) {
                     if (bullets[i].getAge() > MAX_BULLET_AGE) {
@@ -144,23 +183,19 @@ export function createGame(home) {
                     }
                 }
 
-                // Remove old bullets
                 for (let i = kill_bullets.length - 1; i >= 0; i--) {
                     bullets.splice(kill_bullets[i], 1);
                 }
 
-                // Asteroid handling
                 const asteroids = game.asteroids.getIterator();
                 for (let i = 0; i < asteroids.length; i++) {
                     asteroids[i].move();
                     asteroids[i].draw(ctx);
                     console.log('Asteroid position:', asteroids[i].getPosition());
 
-                    // Check for collisions with bullets
                     for (let j = 0; j < bullets.length; j++) {
                         if (collision(bullets[j], asteroids[i])) {
                             game.log.debug('You shot an asteroid!');
-                            console.log('Collision: bullet and asteroid');
                             bullets.splice(j, 1);
                             j--;
                             kill_asteroids.push(i);
@@ -168,15 +203,27 @@ export function createGame(home) {
                         }
                     }
 
-                    // Check for collision with player
-                    if (!game.player.isDead() && !game.player.isInvincible() && collision(game.player, asteroids[i])) {
+                    // Shield deflection logic
+                    if (game.player.shieldActive && collision(game.player, asteroids[i])) {
+                        const angle = Math.atan2(
+                            asteroids[i].getPosition()[1] - game.player.getPosition()[1],
+                            asteroids[i].getPosition()[0] - game.player.getPosition()[0]
+                        );
+
+                        // Deflect the asteroid by reversing its velocity
+                        asteroids[i].setVelocity([
+                            -asteroids[i].getVelocity()[0] + Math.cos(angle) * 2,
+                            -asteroids[i].getVelocity()[1] + Math.sin(angle) * 2
+                        ]);
+
+                        game.sound.play('hit'); // Play hit sound on deflection
+                    } else if (!game.player.isDead() && !game.player.isInvincible() && collision(game.player, asteroids[i])) {
+                        game.sound.play('explode');  // Play explosion sound on collision
                         game.player.die();
-                        console.log('Collision: player and asteroid');
                         game.info.setLives(game.player.getLives());
                     }
                 }
 
-                // Remove destroyed asteroids and create new ones
                 for (let i = kill_asteroids.length - 1; i >= 0; i--) {
                     const asteroidIndex = kill_asteroids[i];
                     const asteroid = asteroids[asteroidIndex];
@@ -188,16 +235,17 @@ export function createGame(home) {
                     console.log('Asteroid destroyed, new asteroids created:', newAsteroids.length);
                 }
 
-                // Add new asteroids
                 for (let i = 0; i < new_asteroids.length; i++) {
                     game.asteroids.push(new_asteroids[i]);
                 }
+
+                // Power-up icons in info pane
+                game.powerUps.drawIcons(ctx);
 
                 console.log('End of game loop. Asteroid count:', game.asteroids.length);
 
                 ctx.restore();
 
-                // Level up logic
                 if (game.levelManager.isLevelComplete()) {
                     clearInterval(game.pulse);
                     if (game.levelManager.startNextLevel()) {
@@ -212,39 +260,59 @@ export function createGame(home) {
             }, FRAME_PERIOD);
         }
 
+        // Event listeners for power-ups
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'z' && game.state === 'playing') {
+                game.state = 'paused'; // Pause the game
+                game.powerUpMenu.open(); // Open the power-up menu
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            switch (event.key) {
+                case 'q':
+                    game.powerUps.usePowerUp('extraLife');
+                    break;
+                case 'w':
+                    game.powerUps.usePowerUp('shield');
+                    break;
+                case 'a':
+                    game.powerUps.usePowerUp('freeze');
+                    break;
+                case 's':
+                    game.powerUps.usePowerUp('bulletUpgrade');
+                    break;
+            }
+        });
+
         startLevel();
     };
 
     game.gameOver = function(won = false) {
         game.log.debug(won ? 'Congratulations! You won!' : 'Game over!');
         console.log(won ? 'Game won!' : 'Game over called');
-    
-        // Stop any ongoing intervals or timeouts
+
         clearInterval(game.pulse);
-    
+
         if (game.player.getScore() > 0) {
             game.highScores.addScore('Player', game.player.getScore());
-            console.log('High score added:', game.player.getScore());
         }
-    
-        // Clear the playfield
+
         const ctx = game.playfield.getContext('2d');
         ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-    
-        // Render Game Over and Score
+
         ctx.font = '30px System, monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = 'white';
         ctx.fillText('GAME OVER', GAME_WIDTH / 2, GAME_HEIGHT / 2 - 60);
-    
+
         ctx.font = '20px System, monospace';
         ctx.fillText(`Score: ${game.player.getScore()}`, GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20);
-    
-        // Display High Scores, capped at 10
-        const scores = game.highScores.getScores().slice(0, 11);  // Limit to top 10 scores
+
+        const scores = game.highScores.getScores().slice(0, 10);
         ctx.font = '16px System, monospace';
         ctx.fillText('High Scores:', GAME_WIDTH / 2, GAME_HEIGHT / 2 + 20);
         for (let i = 0; i < scores.length; i++) {
@@ -254,7 +322,33 @@ export function createGame(home) {
                 GAME_HEIGHT / 2 + 50 + 20 * i
             );
         }
-        console.log('Game over screen drawn');
+
+        // Add a restart button to restart the game
+        const restartButton = document.createElement('button');
+        restartButton.textContent = 'Restart';
+        restartButton.style.position = 'absolute';
+        restartButton.style.top = `${GAME_HEIGHT / 2 + 100}px`;
+        restartButton.style.left = '50%';
+        restartButton.style.transform = 'translateX(-50%)';
+        restartButton.style.fontSize = '20px';
+        restartButton.style.padding = '10px';
+        restartButton.style.cursor = 'pointer';
+        home.appendChild(restartButton);
+
+        restartButton.addEventListener('click', () => {
+            home.removeChild(restartButton); // Remove the button
+            game.resetGame(); // Reset the game
+        });
+    };
+
+    game.resetGame = function() {
+        console.log('Resetting game...');
+        game.player = createPlayer(game);  // Reset player
+        game.asteroids.clear();  // Clear existing asteroids
+        game.levelManager.resetLevels();  // Reset to the first level
+        game.highScores.clear();  // Clear high scores
+        game.sound.startBackgroundMusic();  // Restart background music
+        game.play();  // Restart the game loop
     };
 
     return game;
@@ -267,9 +361,6 @@ function createPlayfield(game, home) {
     canvas.height = GAME_HEIGHT;
     canvas.style.backgroundColor = 'black';
     home.appendChild(canvas);
-    console.log('Playfield created:', canvas);
-    console.log('Canvas dimensions:', canvas.width, canvas.height);
-
     return canvas;
 }
 
@@ -286,7 +377,7 @@ function createStars() {
             for (let i = 0; i < stars.length; i++) {
                 ctx.fillRect(stars[i][0], stars[i][1], 1, 1);
             }
-            console.log('Stars drawn');
         }
     };
 }
+
