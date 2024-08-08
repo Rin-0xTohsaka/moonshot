@@ -45,12 +45,13 @@ export function createInfoPane(game, home) {
     centerPane.appendChild(title);
     pane.appendChild(centerPane);
 
-    // Right-side container (for level)
+    // Right-side container (for level and sound controls)
     const rightPane = document.createElement('div');
     rightPane.style.flex = '1';
     rightPane.style.display = 'flex';
     rightPane.style.justifyContent = 'flex-end';
     rightPane.style.padding = '10px';
+    rightPane.style.position = 'relative';
 
     const level = document.createElement('div');
     level.className = 'stat level';
@@ -58,6 +59,36 @@ export function createInfoPane(game, home) {
     level.style.color = 'green';
 
     rightPane.appendChild(level);
+
+    // Create sound control icons/buttons
+    const soundControls = document.createElement('div');
+    soundControls.style.position = 'absolute';
+    soundControls.style.bottom = '0';
+    soundControls.style.right = '0';
+    soundControls.style.display = 'flex';
+    soundControls.style.gap = '10px';
+    soundControls.style.pointerEvents = 'all';
+
+    const soundToggleButton = document.createElement('button');
+    soundToggleButton.textContent = 'Sound: ON';
+    soundToggleButton.style.cursor = 'pointer';
+    soundToggleButton.onclick = function() {
+        game.sound.toggleSoundEffects();
+        soundToggleButton.textContent = game.sound.areSoundEffectsEnabled() ? 'Sound: ON' : 'Sound: OFF';
+    };
+
+    const musicToggleButton = document.createElement('button');
+    musicToggleButton.textContent = 'Music: ON';
+    musicToggleButton.style.cursor = 'pointer';
+    musicToggleButton.onclick = function() {
+        game.sound.toggleMusic();
+        musicToggleButton.textContent = game.sound.isMusicEnabled() ? 'Music: ON' : 'Music: OFF';
+    };
+
+    soundControls.appendChild(soundToggleButton);
+    soundControls.appendChild(musicToggleButton);
+
+    rightPane.appendChild(soundControls);
     pane.appendChild(rightPane);
 
     // Add the info pane to the home element

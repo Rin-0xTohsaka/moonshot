@@ -14,13 +14,16 @@ export function createSoundManager() {
 
     sounds.backgroundMusic.loop = true; // Set background music to loop
 
+    let soundEffectsEnabled = true;
+    let musicEnabled = true;
+
     return {
         play: function(sound) {
-            if (sounds[sound]) {
+            if (soundEffectsEnabled && sounds[sound]) {
                 sounds[sound].currentTime = 0; // Reset the sound to start if it's already playing
                 sounds[sound].play();
             } else {
-                console.warn(`Sound ${sound} not found.`);
+                console.warn(`Sound ${sound} not found or sound effects are disabled.`);
             }
         },
         stop: function(sound) {
@@ -36,10 +39,29 @@ export function createSoundManager() {
             }
         },
         startBackgroundMusic: function() {
-            this.loop('backgroundMusic');
+            if (musicEnabled) {
+                this.loop('backgroundMusic');
+            }
         },
         stopBackgroundMusic: function() {
             this.stop('backgroundMusic');
+        },
+        toggleSoundEffects: function() {
+            soundEffectsEnabled = !soundEffectsEnabled;
+        },
+        toggleMusic: function() {
+            musicEnabled = !musicEnabled;
+            if (musicEnabled) {
+                this.startBackgroundMusic();
+            } else {
+                this.stopBackgroundMusic();
+            }
+        },
+        areSoundEffectsEnabled: function() {
+            return soundEffectsEnabled;
+        },
+        isMusicEnabled: function() {
+            return musicEnabled;
         }
     };
 }

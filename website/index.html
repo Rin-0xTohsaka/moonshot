@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moonshot</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Lottie Player Script -->
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+</head>
+<body>
+    <div id="stars-container"></div>
+    <header class="navbar">
+        <nav>
+            <ul class="menu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#swap">Swap</a></li>
+                <li><a href="#asteroids">Asteroids</a></li>
+            </ul>
+        </nav>
+        <button id="mobile-menu-toggle" aria-label="Toggle menu">☰</button>
+    </header>
+
+    <main>
+        <section id="home" class="section">
+            <div class="content">
+                <div class="text-container">
+                    <h1 class="header">Moonshot</h1>
+                    <h2>Get Buzz to the moon...again</h2>
+                    <div class="button-container">
+                        <a href="#swap" class="button">Swap</a>
+                        <a href="#asteroids" class="button">Asteroids</a>
+                    </div>
+                </div>
+                <div class="lottie-container">
+                    <dotlottie-player src="https://lottie.host/5b9304f3-5a69-40fb-922e-23ea44514730/BgL8tya7MB.json" 
+                                      background="transparent" speed="1" 
+                                      style="width: 300px; height: 300px;" 
+                                      loop autoplay></dotlottie-player>
+                </div>
+            </div>
+            <div class="chevrons">
+                <i class="fas fa-chevron-down" id="scroll-chevron"></i>
+            </div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <section id="swap" class="section">
+            <h2>Moonshot cross-chain swap</h2>
+            <p>Swap any token from supported networks for Moon</p>
+            <div id="moonshotBridge"></div>
+        </section>
+
+        <div class="section-divider"></div>
+
+        <section id="asteroids" class="section">
+            <h2>Asteroids Game</h2>
+            <p>Asteroids game coming soon!</p>
+        </section>
+    </main>
+
+    <footer>
+        <span>Created by Rin &lt;3 · <a href="https://github.com/Rin-0xTohsaka/moonshot" target="_blank" rel="noopener noreferrer">GitHub</a></span>
+    </footer>
+
+    <script src="https://app.debridge.finance/assets/scripts/widget.js"></script>
+    <script src="script.js"></script>
+    <script>
+        deBridge.widget({"v":"1","element":"moonshotBridge","title":" ","description":" ","width":"400","height":"800","r":8176,"affiliateFeePercent":"0.1","affiliateFeeRecipient":"0xc7e94c2055e0697B11405855060986dd55c63DA6","supportedChains":"{\"inputChains\":{\"1\":\"all\",\"10\":\"all\",\"56\":\"all\",\"100\":\"all\",\"137\":\"all\",\"1088\":\"all\",\"1890\":\"all\",\"8453\":\"all\",\"42161\":\"all\",\"43114\":\"all\",\"59144\":\"all\",\"7565164\":\"all\",\"245022934\":\"all\"},\"outputChains\":{\"1\":\"all\",\"10\":\"all\",\"56\":\"all\",\"100\":\"all\",\"137\":\"all\",\"1088\":\"all\",\"1890\":\"all\",\"8453\":\"all\",\"42161\":\"all\",\"43114\":\"all\",\"59144\":\"all\",\"7565164\":\"all\",\"245022934\":\"all\"}}","inputChain":1,"outputChain":7565164,"inputCurrency":"","outputCurrency":"","address":"","showSwapTransfer":true,"amount":"","outputAmount":"","isAmountFromNotModifiable":false,"isAmountToNotModifiable":false,"lang":"en","mode":"deswap","isEnableCalldata":false,"styles":"eyJhcHBCYWNrZ3JvdW5kIjoiIzAwMDAwMCIsImJvcmRlclJhZGl1cyI6OCwiZm9udEZhbWlseSI6IiIsInByaW1hcnlCdG5CZyI6IiIsInNlY29uZGFyeUJ0bkJnIjoiIiwibGlnaHRCdG5CZyI6IiIsImlzTm9QYWRkaW5nRm9ybSI6ZmFsc2UsImJ0blBhZGRpbmciOnsidG9wIjpudWxsLCJyaWdodCI6bnVsbCwiYm90dG9tIjpudWxsLCJsZWZ0IjpudWxsfSwiYnRuRm9udFNpemUiOm51bGwsImJ0bkZvbnRXZWlnaHQiOm51bGx9","theme":"dark","isHideLogo":false,"logo":"","disabledWallets":[]})
+        </script>
+</body>
+</html>

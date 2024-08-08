@@ -1,0 +1,60 @@
+# Asteroids.js Restructure Plan
+
+## File Structure
+
+```
+/js
+  /config
+    - gameConfig.js
+    - playerConfig.js
+    - bulletConfig.js
+    - asteroidConfig.js
+  /core
+    - game.js
+    - player.js
+    - bullet.js
+    - asteroid.js
+  /utils
+    - collision.js
+    - drawing.js
+    - movement.js
+  /ui
+    - infoPane.js
+    - overlays.js
+    - highScores.js
+  /input
+    - keyState.js
+    - eventListeners.js
+  - main.js
+```
+
+## Module Contents
+
+### /config
+- `gameConfig.js`: Contains all game-wide settings (GAME_HEIGHT, GAME_WIDTH, etc.)
+- `playerConfig.js`: Player-specific settings (ROTATE_SPEED, MAX_SPEED, etc.)
+- `bulletConfig.js`: Bullet-specific settings (BULLET_SPEED, MAX_BULLETS, etc.)
+- `asteroidConfig.js`: Asteroid-specific settings (ASTEROID_COUNT, ASTEROID_SPEED, etc.)
+
+### /core
+- `game.js`: Core game loop and main game object
+- `player.js`: Player object and related methods
+- `bullet.js`: Bullet object and related methods
+- `asteroid.js`: Asteroid object and related methods
+
+### /utils
+- `collision.js`: Collision detection logic
+- `drawing.js`: Drawing utilities (drawPath function)
+- `movement.js`: Movement utilities (move function)
+
+### /ui
+- `infoPane.js`: Information panel logic
+- `overlays.js`: Overlay handling (including stars)
+- `highScores.js`: High score handling
+
+### /input
+- `keyState.js`: Key state tracking
+- `eventListeners.js`: Event listener setup
+
+### main.js
+- Entry point for the game, imports and initializes all modules
