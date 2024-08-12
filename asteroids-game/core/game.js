@@ -240,7 +240,7 @@ export function createGame(home) {
                 }
 
                 // Power-up icons in info pane
-                game.powerUps.drawIcons(ctx);
+                //game.powerUps.drawIcons(ctx);
 
                 console.log('End of game loop. Asteroid count:', game.asteroids.length);
 

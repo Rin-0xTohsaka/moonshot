@@ -1,8 +1,8 @@
 // gameConfig.js
 // Game-wide settings
 
-export const GAME_HEIGHT = 480;
-export const GAME_WIDTH = 640;
+export const GAME_HEIGHT = 580;
+export const GAME_WIDTH = 740;
 export const FRAME_PERIOD = 60; // 1 frame / x frames/sec
 export const LEVEL_TIMEOUT = 2000; // How long to wait after clearing a level.
 

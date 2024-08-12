@@ -97,19 +97,21 @@ export function createInfoPane(game, home) {
     // Create a container for power-up icons and counters at the bottom-left corner
     const powerUpPane = document.createElement('div');
     powerUpPane.style.position = 'absolute';
-    powerUpPane.style.bottom = '10px';
+    powerUpPane.style.bottom = '10px';  // Position at bottom-left
     powerUpPane.style.left = '10px';
     powerUpPane.style.display = 'flex';
     powerUpPane.style.flexDirection = 'column';
     powerUpPane.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
     powerUpPane.style.padding = '5px';
     powerUpPane.style.borderRadius = '8px';
+    powerUpPane.style.pointerEvents = 'none'; // Ensure the icons do not interfere with gameplay
 
     Object.keys(game.powerUps.getPowerUpTypes()).forEach(type => {
         const powerUpDisplay = document.createElement('div');
         powerUpDisplay.className = `powerup-${type} stat powerup`;
         powerUpDisplay.innerHTML = `${type.toUpperCase()}: 0`;
         powerUpDisplay.style.color = 'green';
+        powerUpDisplay.style.marginBottom = '5px'; // Add some spacing between icons
         powerUpPane.appendChild(powerUpDisplay);
     });
 
