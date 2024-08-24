@@ -5,8 +5,8 @@ export default function Stars() {
   const starsContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const starsContainer = starsContainerRef.current
-    if (!starsContainer) return
+    // Use non-null assertion operator here
+    const starsContainer = starsContainerRef.current!
 
     const numStars = 200
     const shootingStarInterval = 2000
