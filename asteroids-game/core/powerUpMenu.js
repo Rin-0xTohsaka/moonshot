@@ -8,7 +8,12 @@ export function createPowerUpMenu(game) {
     let active = false;
     const powerUpTypes = Object.keys(game.powerUps.getPowerUpTypes());
 
-    function drawMenu(ctx) {
+    function drawMenu() {
+        if (!game.ctx) {
+            console.error('Game context is not available');
+            return;
+        }
+        const ctx = game.ctx;
         ctx.save();
         ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -33,7 +38,9 @@ export function createPowerUpMenu(game) {
 
     function open() {
         active = true;
+        game.state = 'paused';
         document.addEventListener('keydown', handleKeyDown);
+        drawMenu(); // Draw the menu immediately when opened
     }
 
     function close() {
@@ -43,7 +50,7 @@ export function createPowerUpMenu(game) {
         if (selectedPowerUp) {
             game.powerUps.usePowerUp(selectedPowerUp);
         }
-        game.state = 'playing';  // Resume the game state
+        game.state = 'playing';
     }
 
     function handleKeyDown(event) {
@@ -58,14 +65,19 @@ export function createPowerUpMenu(game) {
             case ' ':
                 close();
                 break;
+            case 'Escape':
+                close();
+                break;
             default:
                 break;
         }
+        // Redraw the menu after each key press
+        drawMenu();
     }
 
-    function updateAndDraw(ctx) {
-        if (active) {
-            drawMenu(ctx);
+    function updateAndDraw() {
+        if (active && game.ctx) {
+            drawMenu();
         }
     }
 

@@ -27,9 +27,11 @@ export function createBullet(game, _pos, _dir) {
     };
 
     bullet.getPosition = () => bullet.position;
+    console.log('Bullet position:', bullet.position);
     bullet.getVelocity = () => bullet.velocity;
     bullet.getSpeed = () => Math.sqrt(Math.pow(bullet.velocity[0], 2) + Math.pow(bullet.velocity[1], 2));
     bullet.getRadius = () => BULLET_RADIUS;
+    console.log('Bullet radius:', BULLET_RADIUS);
     bullet.getAge = () => bullet.age;
 
     bullet.birthday = () => {

@@ -218,5 +218,9 @@ export function createPlayer(game) {
         }
     };
 
+    player.setInvincible = (value) => {
+        player.invincible = value;
+    };
+
     return player;
 }
