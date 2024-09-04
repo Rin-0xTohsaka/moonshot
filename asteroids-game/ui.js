@@ -75,20 +75,17 @@ class UI {
         ctx.save();
         for (const [type, isActive] of Object.entries(activePowerUps)) {
             if (isActive) {
-                const powerUpImage = new Image();
-                powerUpImage.src = `assets/powerups/${type}.png`;
-                
-                if (powerUpImage.complete) {
+                const powerUpImage = this.game.loadedImages[type];
+                if (powerUpImage) {
                     ctx.drawImage(powerUpImage, x, y, this.powerUpSize, this.powerUpSize);
                 } else {
-                    // Fallback if image hasn't loaded
+                    // Fallback if image hasn't loaded (shouldn't happen with preloading)
                     ctx.fillStyle = 'white';
                     ctx.fillRect(x, y, this.powerUpSize, this.powerUpSize);
                     ctx.fillStyle = 'black';
                     ctx.font = '12px Arial';
                     ctx.fillText(type.charAt(0).toUpperCase(), x + 5, y + 20);
                 }
-                
                 x -= this.powerUpSize + this.powerUpPadding;
             }
         }

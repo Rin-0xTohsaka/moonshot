@@ -1,6 +1,18 @@
 // powerup.js
 
 class PowerUp {
+    static preloadImages() {
+        const types = ['speedBoost', 'shield', 'multiShot', 'timeFreeze'];
+        return Promise.all(types.map(type => {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve();
+                img.onerror = () => reject(`Failed to load power-up image: ${type}`);
+                img.src = `assets/powerups/${type}.png`;
+            });
+        }));
+    }
+
     constructor(game, x, y) {
         this.game = game;
         this.x = x;
@@ -10,16 +22,8 @@ class PowerUp {
         this.speed = 1;
         this.markedForDeletion = false;
         this.type = this.getRandomType();
-        this.image = new Image();
-        this.image.src = `assets/powerups/${this.type}.png`;
-        this.imageLoaded = false;
-        this.image.onload = () => {
-            this.imageLoaded = true;
-        };
-        this.image.onerror = () => {
-            console.error(`Failed to load image for power-up: ${this.type}`);
-            this.imageLoaded = false;
-        };
+        this.image = game.loadedImages[this.type];
+        this.imageLoaded = true;
     }
 
     getRandomType() {

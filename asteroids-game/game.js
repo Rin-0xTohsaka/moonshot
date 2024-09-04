@@ -58,6 +58,16 @@ class Game {
 
         // In the Game class constructor, add:
         this.assetsLoaded = false;
+        this.imagesToLoad = [
+            { name: 'player', src: 'assets/ships/pixel_ship.png' },
+            { name: 'asteroid', src: 'assets/planets/jupiter.png' }, // Placeholder for asteroid
+            { name: 'speedBoost', src: 'assets/powerups/speedBoost.png' },
+            { name: 'shield', src: 'assets/powerups/shield.png' },
+            { name: 'multiShot', src: 'assets/powerups/multiShot.png' },
+            { name: 'timeFreeze', src: 'assets/powerups/timeFreeze.png' },
+            // Add any other images you need to preload
+        ];
+        this.loadedImages = {};
         this.bullet = new Bullet(this, 0, 0); // Create a dummy bullet to trigger static initialization
     }
 
@@ -172,10 +182,27 @@ class Game {
 
     // Add this method to the Game class
     async loadAssets() {
+        const imagePromises = this.imagesToLoad.map(img => {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                image.onload = () => {
+                    this.loadedImages[img.name] = image;
+                    resolve();
+                };
+                image.onerror = () => reject(`Failed to load image: ${img.src}`);
+                image.src = img.src;
+            });
+        });
+
         try {
-            await Bullet.preloadImage();
-            await BossBullet.preloadImage(); // Add this line
+            await Promise.all([
+                ...imagePromises,
+                Bullet.preloadImage(),
+                BossBullet.preloadImage(),
+                PowerUp.preloadImages() // We'll add this method to PowerUp class
+            ]);
             this.assetsLoaded = true;
+            console.log('All assets loaded successfully');
         } catch (error) {
             console.error('Failed to load assets:', error);
         }
