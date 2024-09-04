@@ -145,37 +145,44 @@ class UI {
         ctx.fillRect(0, 0, this.game.width, this.game.height);
         
         ctx.fillStyle = this.color;
-        ctx.font = `${Math.floor(this.fontSize * 1.8)}px ${this.fontFamily}`; // Reduced multiplier
+        ctx.font = `${Math.floor(this.fontSize * 1.8)}px ${this.fontFamily}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('Boss Defeated!', this.game.width / 2, this.game.height / 4);
         
-        // Display next planet info
         const nextLevel = this.game.level.currentLevel + 1;
         if (nextLevel <= this.game.level.planets.length) {
-            const nextPlanet = this.game.level.planets[nextLevel - 1];
+            const nextPlanet = this.game.level.planets[nextLevel - 1].toLowerCase();
             
-            // Load and display planet image
-            const planetImage = new Image();
-            planetImage.src = `assets/planets/${nextPlanet.toLowerCase()}.png`;
-            
-            if (planetImage.complete) {
-                const imgSize = 150;
+            // Use preloaded planet image
+            const planetImage = this.game.loadedImages[nextPlanet];
+            if (planetImage) {
+                const imgSize = Math.min(150, this.game.width * 0.4); // Responsive image size
                 ctx.drawImage(planetImage, 
                     this.game.width / 2 - imgSize / 2, 
                     this.game.height / 2 - imgSize / 2, 
                     imgSize, imgSize);
             }
             
-            ctx.font = `${Math.floor(this.fontSize * 1.3)}px ${this.fontFamily}`; // Reduced multiplier
-            ctx.fillText(`Next Destination: ${nextPlanet}`, this.game.width / 2, this.game.height * 3/4 - 30);
+            ctx.font = `${Math.floor(this.fontSize * 1.3)}px ${this.fontFamily}`;
+            ctx.fillText(`Next Destination: ${nextPlanet.charAt(0).toUpperCase() + nextPlanet.slice(1)}`, this.game.width / 2, this.game.height * 3/4 - 30);
             
             ctx.font = `${this.fontSize}px ${this.fontFamily}`;
-            ctx.fillText(`Level ${nextLevel} Objective: Clear the asteroid field`, this.game.width / 2, this.game.height * 3/4 + 8);
-            ctx.fillText(`and defeat the ${nextPlanet} boss!`, this.game.width / 2, this.game.height * 3/4 + 30);
+            const objective1 = `Level ${nextLevel} Objective: Clear the asteroid field`;
+            const objective2 = `and defeat the ${nextPlanet} boss!`;
+            
+            // Adjust text position for mobile
+            if (this.game.isMobile) {
+                ctx.fillText(objective1, this.game.width / 2, this.game.height * 3/4 + 8);
+                ctx.fillText(objective2, this.game.width / 2, this.game.height * 3/4 + 30);
+            } else {
+                ctx.fillText(`${objective1} ${objective2}`, this.game.width / 2, this.game.height * 3/4 + 20);
+            }
         } else {
-            ctx.font = `30px ${this.fontFamily}`;
-            ctx.fillText("Congratulations! You've cleared all levels!", this.game.width / 2, this.game.height * 3/4);
+            ctx.font = `${this.fontSize * 1.5}px ${this.fontFamily}`;
+            ctx.fillText("Congratulations!", this.game.width / 2, this.game.height / 2);
+            ctx.font = `${this.fontSize}px ${this.fontFamily}`;
+            ctx.fillText("You've cleared all levels!", this.game.width / 2, this.game.height / 2 + 40);
         }
         
         ctx.restore();

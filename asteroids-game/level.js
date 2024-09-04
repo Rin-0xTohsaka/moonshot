@@ -4,8 +4,8 @@ class Level {
     constructor(game) {
         this.game = game;
         this.planets = ['Pluto', 'Neptune', 'Uranus', 'Saturn', 'Jupiter', 'Mars', 'Venus', 'Earth'];
-        this.transitionDuration = 180; // 3 seconds at 60 FPS
-        this.bossDefeatedMessageDuration = 180; // 3 seconds at 60 FPS
+        this.transitionDuration = 300; // Increased from 180 to 300 (5 seconds at 60 FPS)
+        this.bossDefeatedMessageDuration = 300; // Increased from 180 to 300 (5 seconds at 60 FPS)
         this.reset();
     }
 

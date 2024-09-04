@@ -65,6 +65,14 @@ class Game {
             { name: 'shield', src: 'assets/powerups/shield.png' },
             { name: 'multiShot', src: 'assets/powerups/multiShot.png' },
             { name: 'timeFreeze', src: 'assets/powerups/timeFreeze.png' },
+            { name: 'pluto', src: 'assets/planets/pluto.png' },
+            { name: 'neptune', src: 'assets/planets/neptune.png' },
+            { name: 'uranus', src: 'assets/planets/uranus.png' },
+            { name: 'saturn', src: 'assets/planets/saturn.png' },
+            { name: 'jupiter', src: 'assets/planets/jupiter.png' },
+            { name: 'mars', src: 'assets/planets/mars.png' },
+            { name: 'venus', src: 'assets/planets/venus.png' },
+            { name: 'earth', src: 'assets/planets/earth.png' },
             // Add any other images you need to preload
         ];
         this.loadedImages = {};
