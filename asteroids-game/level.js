@@ -30,6 +30,7 @@ class Level {
 
     start() {
         this.currentLevel++;
+        // console.log('Starting level:', this.currentLevel);
         if (this.currentLevel > this.planets.length) {
             this.game.gameWon();
             return;

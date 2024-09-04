@@ -6,7 +6,6 @@ import Boss from './boss.js';
 import Level from './level.js';
 import UI from './ui.js';
 import GameAudio from './audio.js';  // Update this line
-import Leaderboard from './leaderboard.js';
 import Input from './input.js';
 import Collision from './collision.js';
 import PowerUp from './powerup.js';
@@ -29,7 +28,6 @@ class Game {
         this.level = new Level(this);
         this.ui = new UI(this);
         this.audio = new GameAudio();  // Update this line
-        this.leaderboard = new Leaderboard();
         this.input = new Input(this);
 
         this.asteroids = [];
@@ -79,6 +77,11 @@ class Game {
         ];
         this.loadedImages = {};
         this.bullet = new Bullet(this, 0, 0); // Create a dummy bullet to trigger static initialization
+
+        this.setupDesktopControls();
+
+        // console.log(`Is mobile: ${this.isMobile}`);
+        // console.log(`Canvas dimensions: ${this.width}x${this.height}`);
     }
 
     loadFont() {
@@ -136,6 +139,34 @@ class Game {
         menuBtn.addEventListener('click', () => this.showMenu());
     }
 
+    setupDesktopControls() {
+        const desktopPauseBtn = document.getElementById('desktopPauseBtn');
+        const desktopSoundBtn = document.getElementById('desktopSoundBtn');
+        const desktopMusicBtn = document.getElementById('desktopMusicBtn');
+        const desktopMenuBtn = document.getElementById('desktopMenuBtn');
+
+        desktopPauseBtn.addEventListener('click', () => this.togglePause());
+        desktopSoundBtn.addEventListener('click', () => this.toggleSound());
+        desktopMusicBtn.addEventListener('click', () => this.toggleMusic());
+        desktopMenuBtn.addEventListener('click', () => this.showMenu());
+
+        // Update button states
+        this.updateButtonStates();
+    }
+
+    updateButtonStates() {
+        const pauseBtn = document.getElementById('desktopPauseBtn');
+        const soundBtn = document.getElementById('desktopSoundBtn');
+        const musicBtn = document.getElementById('desktopMusicBtn');
+
+        pauseBtn.querySelector('img').src = this.gameState === 'paused' ? 'assets/icons/play.png' : 'assets/icons/pause.png';
+        soundBtn.querySelector('img').src = this.audio.isSoundMuted ? 'assets/icons/sound-off.png' : 'assets/icons/sound-on.png';
+        musicBtn.querySelector('img').src = this.audio.isMusicMuted ? 'assets/icons/music-off.png' : 'assets/icons/music-on.png';
+
+        soundBtn.classList.toggle('active', !this.audio.isSoundMuted);
+        musicBtn.classList.toggle('active', !this.audio.isMusicMuted);
+    }
+
     togglePause() {
         if (this.gameState === 'playing') {
             this.gameState = 'paused';
@@ -144,6 +175,7 @@ class Game {
             this.gameState = 'playing';
             document.getElementById('pauseBtn').querySelector('img').src = 'assets/icons/pause.png';
         }
+        this.updateButtonStates();
     }
 
     toggleSound() {
@@ -152,6 +184,7 @@ class Game {
         const soundImg = soundBtn.querySelector('img');
         soundImg.src = this.audio.isSoundMuted ? 'assets/icons/sound-off.png' : 'assets/icons/sound-on.png';
         soundBtn.classList.toggle('active', !this.audio.isSoundMuted);
+        this.updateButtonStates();
     }
 
     toggleMusic() {
@@ -160,6 +193,7 @@ class Game {
         const musicImg = musicBtn.querySelector('img');
         musicImg.src = this.audio.isMusicMuted ? 'assets/icons/music-off.png' : 'assets/icons/music-on.png';
         musicBtn.classList.toggle('active', !this.audio.isMusicMuted);
+        this.updateButtonStates();
     }
 
     showMenu() {
@@ -213,7 +247,8 @@ class Game {
                 PowerUp.preloadImages() // We'll add this method to PowerUp class
             ]);
             this.assetsLoaded = true;
-            console.log('All assets loaded successfully');
+            // console.log('All assets loaded successfully');
+            // console.log('Loaded images:', Object.keys(this.loadedImages));
         } catch (error) {
             console.error('Failed to load assets:', error);
         }
@@ -226,7 +261,13 @@ class Game {
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
         this.showMainMenu();
-        requestAnimationFrame(this.gameLoop.bind(this));
+        
+        // Add a delay before starting the game loop
+        setTimeout(() => {
+            // console.log('Starting game loop');
+            requestAnimationFrame(this.gameLoop.bind(this));
+        }, 1000); // 1 second delay
+
         this.waitForFontAndStart();
 
         // Initialize button states
@@ -248,18 +289,25 @@ class Game {
         const container = this.canvas.parentElement;
         const containerWidth = container.clientWidth;
         const containerHeight = container.clientHeight;
-        const containerAspectRatio = containerWidth / containerHeight;
 
         let canvasWidth, canvasHeight;
 
-        if (containerAspectRatio > this.aspectRatio) {
-            // Container is wider than desired aspect ratio
-            canvasHeight = containerHeight - 4; // Reduced from 6 to 4
-            canvasWidth = canvasHeight * this.aspectRatio;
+        if (this.isMobile) {
+            // Mobile sizing logic
+            canvasWidth = containerWidth;
+            canvasHeight = containerHeight;
         } else {
-            // Container is taller than desired aspect ratio
-            canvasWidth = containerWidth - 12;
-            canvasHeight = canvasWidth / this.aspectRatio;
+            // Desktop sizing logic
+            const maxWidth = 800; // Maximum width for desktop
+            const maxHeight = window.innerHeight * 0.9; // 90% of viewport height
+
+            if (containerWidth / containerHeight > this.aspectRatio) {
+                canvasHeight = Math.min(maxHeight, containerHeight);
+                canvasWidth = canvasHeight * this.aspectRatio;
+            } else {
+                canvasWidth = Math.min(maxWidth, containerWidth);
+                canvasHeight = canvasWidth / this.aspectRatio;
+            }
         }
 
         this.canvas.width = canvasWidth;
@@ -271,6 +319,8 @@ class Game {
         this.height = canvasHeight;
         if (this.player) this.player.setDimensions();
         if (this.ui) this.ui.setFontSize();
+
+        // console.log('Canvas dimensions:', this.width, this.height);
     }
 
     showMainMenu() {
@@ -281,7 +331,7 @@ class Game {
 
     startGame() {
         this.reset();
-        console.log('Game state changed to playing');
+        // console.log('Game state changed to playing');
         this.gameState = 'playing';
         this.score = 0;
         this.lives = 3;
@@ -340,6 +390,9 @@ class Game {
     }
 
     render() {
+        // console.log('Rendering frame');
+        // console.log('Game state:', this.gameState);
+        // console.log('Assets loaded:', this.assetsLoaded);
         this.ctx.fillStyle = 'black';
         this.ctx.fillRect(0, 0, this.width, this.height);
 
@@ -394,12 +447,18 @@ class Game {
                 this.ctx.fillRect(bullet.x - 2, bullet.y - 2, 4, 4);
             });
         }
+
+        if (this.assetsLoaded) {
+            // console.log('Player position:', this.player.x, this.player.y);
+            // console.log('Number of asteroids:', this.asteroids.length);
+            // console.log('Boss:', this.boss ? 'present' : 'not present');
+        }
     }
 
     // Move these methods outside of the render method
     toggleDebugMode() {
         this.debugMode = !this.debugMode;
-        console.log(`Debug mode: ${this.debugMode ? 'ON' : 'OFF'}`);
+        // console.log(`Debug mode: ${this.debugMode ? 'ON' : 'OFF'}`);
     }
 
     updateAsteroids(deltaTime) {
@@ -437,34 +496,14 @@ class Game {
         this.gameState = 'gameOver';
         this.audio.stopMusic();
         this.audio.playSound('explode');
-        
-        if (this.leaderboard.isHighScore(this.score)) {
-            this.showHighScoreDialog();
-        } else {
-            this.showGameOverScreen = true;
-        }
+        this.showGameOverScreen = true;
     }
 
     gameWon() {
         this.gameState = 'gameWon';
         this.audio.stopMusic();
         this.audio.playSound('victory');
-        
-        if (this.leaderboard.isHighScore(this.score)) {
-            this.showHighScoreDialog();
-        } else {
-            this.ui.showGameWon();
-        }
-    }
-
-    showHighScoreDialog() {
-        this.gameState = 'highScoreDialog';
-        this.ui.showHighScoreDialog(this.score);
-    }
-
-    submitHighScore(name) {
-        this.leaderboard.addScore(name, this.score);
-        this.showGameOverScreen = true;
+        this.ui.showGameWon();
     }
 
     // Remove or comment out the applyCRTEffect method if it's not needed

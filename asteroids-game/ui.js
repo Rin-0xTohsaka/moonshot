@@ -222,53 +222,9 @@ class UI {
         // The state is now indicated by the glowing buttons in the mobile controls
     }
 
-    showHighScoreDialog(score) {
-        const dialog = document.createElement('div');
-        dialog.className = 'high-score-dialog';
-        dialog.innerHTML = `
-            <h2>New High Score: ${score}</h2>
-            <p>Enter your name (4 characters):</p>
-            <input type="text" maxlength="4" id="highScoreName">
-            <button id="submitHighScore">Submit</button>
-        `;
-        document.body.appendChild(dialog);
-
-        const input = document.getElementById('highScoreName');
-        const submitButton = document.getElementById('submitHighScore');
-
-        submitButton.addEventListener('click', () => {
-            const name = input.value.toUpperCase().padEnd(4, ' ');
-            this.game.submitHighScore(name);
-            document.body.removeChild(dialog);
-        });
-    }
-
-    showLeaderboard(ctx) {
-        const topScores = this.game.leaderboard.getTopScores();
-        
-        ctx.save();
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(0, 0, this.game.width, this.game.height);
-        
-        ctx.fillStyle = this.color;
-        ctx.font = `${this.fontSize * 1.5}px ${this.fontFamily}`;
-        ctx.textAlign = 'center';
-        ctx.fillText('Leaderboard', this.game.width / 2, 50);
-
-        ctx.font = `${this.fontSize}px ${this.fontFamily}`;
-        ctx.textAlign = 'left';
-        topScores.forEach((entry, index) => {
-            const text = `${index + 1}. ${entry.name} - ${entry.score}`;
-            ctx.fillText(text, 50, 100 + index * 30);
-        });
-
-        ctx.textAlign = 'center';
-        ctx.fillText('Press ENTER to continue', this.game.width / 2, this.game.height - 50);
-        ctx.restore();
-    }
-
-    // Remove or comment out the typewriter-related methods
-    // startTypewriterEffect, updateTypewriter, isTypewriterComplete
+    // Remove these methods
+    // showHighScoreDialog(score) { ... }
+    // showLeaderboard(ctx) { ... }
 }
 
 export default UI;
