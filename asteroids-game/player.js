@@ -85,10 +85,12 @@ class Player {
 
     shoot() {
         console.log('Shoot method called');
-        const bullet = new Bullet(this.game, this.x + this.width / 2, this.y - 10);  // Spawn bullet slightly above the player
+        const bulletX = this.x + this.width / 2;
+        const bulletY = this.y - 10;
+        const bullet = new Bullet(this.game, bulletX, bulletY);
         this.bullets.push(bullet);
         this.game.audio.playSound('laser');
-        console.log(`Bullet created at (${bullet.x}, ${bullet.y})`);
+        console.log(`Bullet created at (${bulletX}, ${bulletY})`);
     }
 
     hit() {

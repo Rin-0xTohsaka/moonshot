@@ -5,32 +5,35 @@ class Bullet {
         this.game = game;
         this.x = x;
         this.y = y;
-        this.width = 8;  // Increase width
-        this.height = 20;  // Increase height
-        this.speed = 7;  // Increased from 5
+        // Increase size for mobile
+        this.width = this.game.isMobile ? 16 : 8;
+        this.height = this.game.isMobile ? 40 : 20;
+        // Slightly reduce speed for mobile
+        this.speed = this.game.isMobile ? 5 : 7;
         this.markedForDeletion = false;
         this.image = new Image();
         this.image.src = 'assets/projectiles/pixel_laser_blue.png';
+        this.imageLoaded = false;
+        this.image.onload = () => {
+            this.imageLoaded = true;
+        };
     }
 
     update(deltaTime) {
         this.y -= this.speed;
-        console.log(`Bullet updated: (${this.x}, ${this.y})`);
         if (this.y + this.height < 0) {
             this.markedForDeletion = true;
-            console.log('Bullet marked for deletion');
         }
     }
 
     render(ctx) {
-        if (this.image.complete) {
+        if (this.imageLoaded) {
             ctx.drawImage(this.image, this.x - this.width / 2, this.y, this.width, this.height);
         } else {
             // Fallback rendering if image hasn't loaded
-            ctx.fillStyle = 'yellow';  // Change color to yellow for better visibility
+            ctx.fillStyle = '#00f'; // Bright blue color
             ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height);
         }
-        console.log(`Bullet rendered at (${this.x}, ${this.y})`);
     }
 }
 

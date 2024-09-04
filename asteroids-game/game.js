@@ -50,6 +50,9 @@ class Game {
         this.fontLoaded = false;
         this.loadFont();
         this.gameLoopStarted = false;
+
+        // Add this property to the Game class
+        this.debugMode = false;
     }
 
     loadFont() {
@@ -316,6 +319,20 @@ class Game {
         if (this.showGameOverScreen) {
             this.ui.showGameOver(this.ctx);
         }
+
+        // Debug mode rendering
+        if (this.debugMode) {
+            this.ctx.fillStyle = 'red';
+            this.player.bullets.forEach(bullet => {
+                this.ctx.fillRect(bullet.x - 2, bullet.y - 2, 4, 4);
+            });
+        }
+    }
+
+    // Move these methods outside of the render method
+    toggleDebugMode() {
+        this.debugMode = !this.debugMode;
+        console.log(`Debug mode: ${this.debugMode ? 'ON' : 'OFF'}`);
     }
 
     updateAsteroids(deltaTime) {
