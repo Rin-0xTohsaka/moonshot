@@ -119,14 +119,18 @@ class Game {
 
     toggleSound() {
         this.audio.toggleSound();
-        const soundBtn = document.getElementById('soundBtn').querySelector('img');
-        soundBtn.src = this.audio.isSoundMuted ? 'assets/icons/sound-off.png' : 'assets/icons/sound-on.png';
+        const soundBtn = document.getElementById('soundBtn');
+        const soundImg = soundBtn.querySelector('img');
+        soundImg.src = this.audio.isSoundMuted ? 'assets/icons/sound-off.png' : 'assets/icons/sound-on.png';
+        soundBtn.classList.toggle('active', !this.audio.isSoundMuted);
     }
 
     toggleMusic() {
         this.audio.toggleMusic();
-        const musicBtn = document.getElementById('musicBtn').querySelector('img');
-        musicBtn.src = this.audio.isMusicMuted ? 'assets/icons/music-off.png' : 'assets/icons/music-on.png';
+        const musicBtn = document.getElementById('musicBtn');
+        const musicImg = musicBtn.querySelector('img');
+        musicImg.src = this.audio.isMusicMuted ? 'assets/icons/music-off.png' : 'assets/icons/music-on.png';
+        musicBtn.classList.toggle('active', !this.audio.isMusicMuted);
     }
 
     showMenu() {
@@ -165,6 +169,12 @@ class Game {
         this.showMainMenu();
         requestAnimationFrame(this.gameLoop.bind(this));
         this.waitForFontAndStart();
+
+        // Initialize button states
+        const soundBtn = document.getElementById('soundBtn');
+        const musicBtn = document.getElementById('musicBtn');
+        soundBtn.classList.toggle('active', !this.audio.isSoundMuted);
+        musicBtn.classList.toggle('active', !this.audio.isMusicMuted);
     }
 
     waitForFontAndStart() {
@@ -176,23 +186,30 @@ class Game {
     }
 
     resizeCanvas() {
-        if (this.isMobile) {
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
-            const gameScreenHeight = screenHeight / 2;
-            const canvasWidth = Math.min(screenWidth, gameScreenHeight * this.aspectRatio);
-            const canvasHeight = canvasWidth / this.aspectRatio;
+        const container = this.canvas.parentElement;
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+        const containerAspectRatio = containerWidth / containerHeight;
 
-            this.canvas.width = canvasWidth;
-            this.canvas.height = canvasHeight;
-            this.canvas.style.width = `${canvasWidth}px`;
-            this.canvas.style.height = `${canvasHeight}px`;
+        let canvasWidth, canvasHeight;
+
+        if (containerAspectRatio > this.aspectRatio) {
+            // Container is wider than desired aspect ratio
+            canvasHeight = containerHeight - 10; // 5px padding top and bottom
+            canvasWidth = canvasHeight * this.aspectRatio;
         } else {
-            this.canvas.width = 800;
-            this.canvas.height = 720;
+            // Container is taller than desired aspect ratio
+            canvasWidth = containerWidth - 20; // 10px padding left and right
+            canvasHeight = canvasWidth / this.aspectRatio;
         }
-        this.width = this.canvas.width;
-        this.height = this.canvas.height;
+
+        this.canvas.width = canvasWidth;
+        this.canvas.height = canvasHeight;
+        this.canvas.style.width = `${canvasWidth}px`;
+        this.canvas.style.height = `${canvasHeight}px`;
+
+        this.width = canvasWidth;
+        this.height = canvasHeight;
         if (this.player) this.player.setDimensions();
         if (this.ui) this.ui.setFontSize();
     }

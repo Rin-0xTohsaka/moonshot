@@ -58,8 +58,8 @@ class UI {
         // Render active power-ups
         this.renderActivePowerUps(ctx);
 
-        // Add sound and music toggle buttons
-        this.renderToggleButtons(ctx);
+        // Remove or comment out this line:
+        // this.renderToggleButtons(ctx);
 
         // Show boss defeated message
         if (this.game.level.state === 'bossDefeated') {
@@ -185,23 +185,8 @@ class UI {
     }
 
     renderToggleButtons(ctx) {
-        ctx.save();
-        ctx.fillStyle = this.color;
-        ctx.font = `${Math.floor(this.fontSize * 0.9)}px ${this.fontFamily}`; // Reduced multiplier
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.shadowColor = this.color;
-        ctx.shadowBlur = 5;
-
-        // Sound toggle button
-        const soundText = this.game.audio.isSoundMuted ? 'SOUND: OFF' : 'SOUND: ON';
-        ctx.fillText(soundText, 20, this.game.height - 60);
-
-        // Music toggle button
-        const musicText = this.game.audio.isMusicMuted ? 'MUSIC: OFF' : 'MUSIC: ON';
-        ctx.fillText(musicText, 20, this.game.height - 30);
-
-        ctx.restore();
+        // This method is now empty as we don't need to render any text for sound and music toggles
+        // The state is now indicated by the glowing buttons in the mobile controls
     }
 }
 
