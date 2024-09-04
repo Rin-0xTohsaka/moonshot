@@ -17,89 +17,105 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #000;
+            background-color: #8bac0f;
             font-family: 'PressStart2P', 'Courier New', monospace;
             overflow: hidden;
         }
 
         .game-container {
             position: relative;
-            width: 800px;
-            height: 600px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-screen {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #0f380f;
+            padding: 10px;
         }
 
         #gameCanvas {
-            border: 2px solid #fff;
-            border-radius: 15px;
-            box-shadow: 0 0 20px #0ff, 0 0 30px #0ff, 0 0 40px #0ff, 0 0 50px #0ff;
+            border: 2px solid #306230;
             image-rendering: pixelated;
-        }
-
-        .crt-effect {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-        }
-
-        @media (max-width: 800px) {
-            .game-container {
-                width: 100vw;
-                height: 100vh;
-            }
-
-            #gameCanvas {
-                width: 100%;
-                height: 100%;
-                border-radius: 0;
-            }
         }
 
         .mobile-controls {
             display: none;
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
+            flex: 1;
+            background-color: #8bac0f;
+            padding: 20px;
         }
 
         .mobile-controls button {
-            background: rgba(255, 255, 255, 0.3);
-            border: 2px solid #fff;
-            color: #fff;
+            background: #306230;
+            border: 2px solid #0f380f;
+            color: #8bac0f;
             font-family: 'PressStart2P', monospace;
-            font-size: 24px;
-            padding: 15px;
+            font-size: 16px;
+            padding: 10px;
             margin: 5px;
-            border-radius: 10px;
+            border-radius: 5px;
+        }
+
+        .d-pad {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
         }
 
         #leftBtn, #rightBtn {
-            width: 80px;
+            width: 60px;
+            height: 60px;
         }
 
         #shootBtn {
-            position: absolute;
-            right: 20px;
-            bottom: 20px;
             width: 100px;
             height: 100px;
             border-radius: 50%;
+            font-size: 14px;
+        }
+
+        .controls-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        @media (max-width: 800px) {
+            .game-container {
+                flex-direction: column;
+            }
+
+            .game-screen, .mobile-controls {
+                flex: 1;
+            }
+
+            .mobile-controls {
+                display: flex;
+            }
         }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <canvas id="gameCanvas"></canvas>
-        <div class="crt-effect"></div>
+        <div class="game-screen">
+            <canvas id="gameCanvas"></canvas>
+        </div>
         <div class="mobile-controls">
-            <button id="leftBtn">←</button>
-            <button id="rightBtn">→</button>
-            <button id="shootBtn">FIRE</button>
+            <div class="controls-container">
+                <div class="d-pad">
+                    <button id="leftBtn">←</button>
+                    <button id="rightBtn">→</button>
+                </div>
+                <button id="shootBtn">FIRE</button>
+            </div>
         </div>
     </div>
     <script type="module">
@@ -107,7 +123,7 @@
 
         window.addEventListener('load', () => {
             const game = new Game();
-            game.init(); // Make sure this method exists and starts the game loop
+            game.init();
         });
     </script>
 </body>

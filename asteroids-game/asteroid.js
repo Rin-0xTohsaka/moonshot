@@ -24,6 +24,7 @@ class Asteroid {
 
     update(deltaTime) {
         this.y += this.speed;
+        this.x = Math.max(0, Math.min(this.game.width - this.width, this.x));
         if (this.y > this.game.height) {
             this.markedForDeletion = true;
         }

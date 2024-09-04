@@ -18,8 +18,9 @@ class Game {
             throw new Error('Canvas element not found');
         }
         this.ctx = this.canvas.getContext('2d');
-        this.width = this.canvas.width;
-        this.height = this.canvas.height;
+        this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        this.aspectRatio = 10 / 9; // GameBoy Color aspect ratio
+        this.resizeCanvas();
 
         this.player = new Player(this);
         this.level = new Level(this);
@@ -42,7 +43,6 @@ class Game {
 
         this.preloadPowerUpImages();
 
-        this.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         if (this.isMobile) {
             this.setupMobileControls();
         }
@@ -128,11 +128,19 @@ class Game {
 
     resizeCanvas() {
         if (this.isMobile) {
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const gameScreenHeight = screenHeight / 2;
+            const canvasWidth = Math.min(screenWidth, gameScreenHeight * this.aspectRatio);
+            const canvasHeight = canvasWidth / this.aspectRatio;
+
+            this.canvas.width = canvasWidth;
+            this.canvas.height = canvasHeight;
+            this.canvas.style.width = `${canvasWidth}px`;
+            this.canvas.style.height = `${canvasHeight}px`;
         } else {
             this.canvas.width = 800;
-            this.canvas.height = 600;
+            this.canvas.height = 720;
         }
         this.width = this.canvas.width;
         this.height = this.canvas.height;

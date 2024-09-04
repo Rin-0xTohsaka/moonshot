@@ -6,8 +6,8 @@ class Boss {
     constructor(game, level) {
         this.game = game;
         this.level = level;
-        this.width = 100;
-        this.height = 100;
+        this.width = game.isMobile ? game.width * 0.3 : 100; // Adjust size for mobile
+        this.height = this.width;
         this.x = game.width / 2 - this.width / 2;
         this.y = -this.height;
         this.speed = 1.5; // Increased from 1
@@ -34,6 +34,10 @@ class Boss {
 
         // Side-to-side movement (increased amplitude)
         this.x += Math.sin(this.game.lastTime / 800) * 3; // Increased frequency and amplitude
+
+        // Restrict boss movement within screen boundaries
+        this.x = Math.max(0, Math.min(this.game.width - this.width, this.x));
+        this.y = Math.max(0, Math.min(this.game.height - this.height, this.y));
 
         // Shooting
         this.shootTimer++;
@@ -62,7 +66,6 @@ class Boss {
         const bulletX = this.x + this.width / 2;
         const bulletY = this.y + this.height;
         this.bullets.push(new BossBullet(this.game, bulletX, bulletY));
-        // Remove the line that plays the bosslaser sound
     }
 
     hit(damage) {

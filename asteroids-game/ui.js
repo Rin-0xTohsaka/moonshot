@@ -11,9 +11,9 @@ class UI {
 
     setFontSize() {
         if (this.game.isMobile) {
-            this.fontSize = Math.max(10, Math.floor(this.game.width / 40)); // Reduced from 12 and 30
+            this.fontSize = Math.max(8, Math.floor(this.game.width / 50));
         } else {
-            this.fontSize = 14; // Reduced from 16
+            this.fontSize = 14;
         }
         this.fontFamily = "'PressStart2P', 'Courier New', monospace";
     }
@@ -47,13 +47,13 @@ class UI {
 
     renderPlayingState(ctx) {
         // Score
-        ctx.fillText(`SCORE: ${this.game.score}`, 20, 20);
+        ctx.fillText(`SCORE: ${this.game.score}`, 10, 10);
 
         // Lives
-        ctx.fillText(`LIVES: ${this.game.lives}`, 20, 40);
+        ctx.fillText(`LIVES: ${this.game.lives}`, 10, 10 + this.fontSize + 5);
 
         // Level
-        ctx.fillText(`LEVEL: ${this.game.level.currentLevel}`, 20, 60);
+        ctx.fillText(`LEVEL: ${this.game.level.currentLevel}`, 10, 10 + (this.fontSize + 5) * 2);
 
         // Render active power-ups
         this.renderActivePowerUps(ctx);

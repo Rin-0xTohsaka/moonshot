@@ -9,13 +9,9 @@ class Player {
     }
 
     setDimensions() {
-        if (this.game.isMobile) {
-            this.width = this.game.width * 0.1;
-            this.height = this.game.height * 0.1;
-        } else {
-            this.width = 50;
-            this.height = 50;
-        }
+        const scaleFactor = this.game.isMobile ? 0.08 : 0.0625;
+        this.width = this.game.width * scaleFactor;
+        this.height = this.width;
         this.x = this.game.width / 2 - this.width / 2;
         this.y = this.game.height - this.height - 20;
     }
@@ -38,11 +34,11 @@ class Player {
 
     update(deltaTime) {
         // Movement
-        if (this.game.input.keys.ArrowLeft && this.x > 0) {
-            this.x -= this.speed;
+        if (this.game.input.keys.ArrowLeft) {
+            this.x = Math.max(0, this.x - this.speed);
         }
-        if (this.game.input.keys.ArrowRight && this.x < this.game.width - this.width) {
-            this.x += this.speed;
+        if (this.game.input.keys.ArrowRight) {
+            this.x = Math.min(this.game.width - this.width, this.x + this.speed);
         }
 
         // Shooting
