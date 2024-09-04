@@ -24,6 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="icon" href="/moon.png" />
+        <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
       </head>
       <body className={inter.className}>
         <Stars />
