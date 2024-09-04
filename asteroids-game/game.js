@@ -49,6 +49,7 @@ class Game {
 
         this.fontLoaded = false;
         this.loadFont();
+        this.gameLoopStarted = false;
     }
 
     loadFont() {
@@ -86,8 +87,19 @@ class Game {
         handleTouch(leftBtn, 'ArrowLeft', false);
         handleTouch(rightBtn, 'ArrowRight', true);
         handleTouch(rightBtn, 'ArrowRight', false);
-        handleTouch(shootBtn, 'Space', true);
-        handleTouch(shootBtn, 'Space', false);
+
+        // Modified shoot button handling
+        shootBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.input.keys['Space'] = true;
+            if (this.gameState === 'menu' || this.gameState === 'gameOver') {
+                this.startGame();
+            }
+        });
+        shootBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            this.input.keys['Space'] = false;
+        });
 
         pauseBtn.addEventListener('click', () => this.togglePause());
         soundBtn.addEventListener('click', () => this.toggleSound());
@@ -193,13 +205,16 @@ class Game {
 
     startGame() {
         this.reset();
-        console.log('Game state changed to playing'); // Add this line
+        console.log('Game state changed to playing');
         this.gameState = 'playing';
         this.score = 0;
         this.lives = 3;
         this.level.start();
         this.audio.startMusic();
-        this.gameLoop(0);  // Start the game loop
+        if (!this.gameLoopStarted) {
+            this.gameLoopStarted = true;
+            this.gameLoop(0);  // Start the game loop
+        }
     }
 
     gameLoop(timestamp) {
@@ -256,6 +271,13 @@ class Game {
 
         // Render UI elements
         this.ui.render(this.ctx);
+
+        // Render game title in the top letterbox
+        this.ctx.fillStyle = '#0ff'; // Cyan color to match the UI
+        this.ctx.font = `${Math.floor(this.ui.fontSize * 1.5)}px ${this.ui.fontFamily}`;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'top';
+        this.ctx.fillText('MOONSHOT', this.width / 2, 10); // 10 pixels from the top
 
         // If the game is paused, render a semi-transparent overlay with "PAUSED" text
         if (this.gameState === 'paused') {
