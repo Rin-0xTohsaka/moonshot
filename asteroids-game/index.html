@@ -29,23 +29,24 @@
             height: 100%;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Add this to contain the glow effect */
+            overflow: hidden;
         }
 
         .glow-effect {
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: radial-gradient(
-                circle,
-                rgba(0, 255, 255, 0.2) 0%,
-                rgba(0, 255, 255, 0.1) 20%,
+                circle at center,
+                rgba(0, 255, 255, 0.3) 0%,
+                rgba(0, 255, 255, 0.1) 40%,
                 rgba(0, 0, 0, 0) 70%
             );
-            pointer-events: none; /* Allows clicks to pass through */
-            z-index: 1; /* Places the glow behind the game screen */
+            pointer-events: none;
+            z-index: 1;
+            display: none;
         }
 
         .game-screen {
@@ -56,8 +57,10 @@
             justify-content: center;
             align-items: center;
             background-color: #000000;
-            padding: 5px; /* Reduced from 10px */
+            padding: 5px;
             box-sizing: border-box;
+            border-radius: 10px; /* Add this line */
+            overflow: hidden; /* Add this line */
         }
 
         .letterbox {
@@ -69,15 +72,17 @@
             align-items: center;
             background-color: #000000;
             overflow: hidden;
-            padding: 2px 5px; /* Reduced from 5px 10px */
+            padding: 2px 5px;
+            box-shadow: 0 0 20px 5px rgba(0, 255, 255, 0.3);
+            border-radius: 8px; /* Add this line */
         }
 
         #gameCanvas {
-            border: 2px solid #444444; /* Increased from 1px to 2px */
-            border-radius: 8px; /* Added rounded corners */
+            border: 2px solid #444444;
+            border-radius: 8px;
             image-rendering: pixelated;
-            max-width: calc(100% - 12px);  /* Adjusted to account for thicker border */
-            max-height: calc(100% - 4px); /* Increased from 6px to 4px */
+            max-width: calc(100% - 12px);
+            max-height: calc(100% - 4px);
             box-sizing: border-box;
         }
 
@@ -188,7 +193,7 @@
             font-family: 'PressStart2P', monospace;
             font-size: 14px;
             padding: 5px;
-            margin: 0 5px; /* Add horizontal margin */
+            margin: 0 5px;
             border-radius: 5px;
             display: flex;
             justify-content: center;
@@ -196,15 +201,15 @@
             width: 40px;
             height: 40px;
             cursor: pointer;
-            position: relative; /* Add this */
-            overflow: hidden; /* Add this */
+            position: relative;
+            overflow: hidden;
         }
 
         .desktop-controls button img {
             width: 24px;
             height: 24px;
-            position: relative; /* Add this */
-            z-index: 2; /* Add this */
+            position: relative;
+            z-index: 2;
         }
 
         .desktop-controls button::before {
@@ -217,11 +222,11 @@
             background: radial-gradient(circle, #00ffff 0%, transparent 70%);
             opacity: 0;
             transition: opacity 0.3s ease;
-            z-index: 1; /* Add this */
+            z-index: 1;
         }
 
         .desktop-controls button.active::before {
-            opacity: 0.5; /* Reduce opacity */
+            opacity: 0.5;
         }
 
         @media (max-width: 800px) {
@@ -230,11 +235,11 @@
             }
 
             .game-screen {
-                flex: 0 0 60%; /* Change this line */
+                flex: 0 0 60%;
             }
 
             .mobile-controls {
-                flex: 0 0 40%; /* Change this line */
+                flex: 0 0 40%;
                 display: flex;
             }
 
@@ -245,13 +250,13 @@
 
             .letterbox {
                 width: 100%;
-                height: 100%; /* Change this line */
+                height: 100%;
+                max-height: none;
             }
 
             #gameCanvas {
                 width: 100%;
                 height: 100%;
-                max-height: none; /* Add this line */
             }
         }
 
@@ -275,7 +280,11 @@
 
             .desktop-controls {
                 display: flex;
-                gap: 10px; /* Add gap between buttons */
+                gap: 10px;
+            }
+
+            .glow-effect {
+                display: block;
             }
         }
 
