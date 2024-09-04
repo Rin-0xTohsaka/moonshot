@@ -65,11 +65,15 @@ class Game {
 
     setupMobileControls() {
         const mobileControls = document.querySelector('.mobile-controls');
-        mobileControls.style.display = 'block';
+        mobileControls.style.display = 'flex';
 
         const leftBtn = document.getElementById('leftBtn');
         const rightBtn = document.getElementById('rightBtn');
         const shootBtn = document.getElementById('shootBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const soundBtn = document.getElementById('soundBtn');
+        const musicBtn = document.getElementById('musicBtn');
+        const menuBtn = document.getElementById('menuBtn');
 
         const handleTouch = (btn, keyCode, isDown) => {
             btn.addEventListener(isDown ? 'touchstart' : 'touchend', (e) => {
@@ -84,6 +88,39 @@ class Game {
         handleTouch(rightBtn, 'ArrowRight', false);
         handleTouch(shootBtn, 'Space', true);
         handleTouch(shootBtn, 'Space', false);
+
+        pauseBtn.addEventListener('click', () => this.togglePause());
+        soundBtn.addEventListener('click', () => this.toggleSound());
+        musicBtn.addEventListener('click', () => this.toggleMusic());
+        menuBtn.addEventListener('click', () => this.showMenu());
+    }
+
+    togglePause() {
+        if (this.gameState === 'playing') {
+            this.gameState = 'paused';
+            document.getElementById('pauseBtn').querySelector('img').src = 'assets/icons/play.png';
+        } else if (this.gameState === 'paused') {
+            this.gameState = 'playing';
+            document.getElementById('pauseBtn').querySelector('img').src = 'assets/icons/pause.png';
+        }
+    }
+
+    toggleSound() {
+        this.audio.toggleSound();
+        const soundBtn = document.getElementById('soundBtn').querySelector('img');
+        soundBtn.src = this.audio.isSoundMuted ? 'assets/icons/sound-off.png' : 'assets/icons/sound-on.png';
+    }
+
+    toggleMusic() {
+        this.audio.toggleMusic();
+        const musicBtn = document.getElementById('musicBtn').querySelector('img');
+        musicBtn.src = this.audio.isMusicMuted ? 'assets/icons/music-off.png' : 'assets/icons/music-on.png';
+    }
+
+    showMenu() {
+        // Implement menu logic
+        // For now, let's just redirect to the homepage
+        window.location.href = 'https://moonshot-theta.vercel.app/#home';
     }
 
     preloadPowerUpImages() {
@@ -211,22 +248,25 @@ class Game {
         this.ctx.fillStyle = 'black';
         this.ctx.fillRect(0, 0, this.width, this.height);
 
-        switch (this.gameState) {
-            case 'menu':
-                this.ui.showMainMenu(this.ctx);
-                break;
-            case 'playing':
-                this.player.render(this.ctx);
-                this.asteroids.forEach(asteroid => asteroid.render(this.ctx));
-                this.powerUps.forEach(powerUp => powerUp.render(this.ctx));
-                if (this.boss) this.boss.render(this.ctx);
-                break;
-            case 'gameOver':
-                this.ui.showGameOver(this.ctx);
-                break;
-        }
+        // Always render the game elements, regardless of game state
+        this.player.render(this.ctx);
+        this.asteroids.forEach(asteroid => asteroid.render(this.ctx));
+        this.powerUps.forEach(powerUp => powerUp.render(this.ctx));
+        if (this.boss) this.boss.render(this.ctx);
 
+        // Render UI elements
         this.ui.render(this.ctx);
+
+        // If the game is paused, render a semi-transparent overlay with "PAUSED" text
+        if (this.gameState === 'paused') {
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            this.ctx.fillRect(0, 0, this.width, this.height);
+            this.ctx.fillStyle = '#0ff';
+            this.ctx.font = `${this.ui.fontSize * 2}px ${this.ui.fontFamily}`;
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText('PAUSED', this.width / 2, this.height / 2);
+        }
 
         // Show boss defeated message
         if (this.level.state === 'bossDefeated') {
