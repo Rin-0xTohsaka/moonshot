@@ -19,7 +19,8 @@ class Leaderboard {
 
     async fetchScoresFromGitHub() {
         try {
-            const response = await fetch('https://raw.githubusercontent.com/your-username/your-repo/main/leaderboard.json');
+            // Updated URL to reflect the new location of leaderboard.json
+            const response = await fetch('https://raw.githubusercontent.com/Rin-0xTohsaka/moonshot/main/asteroids-game/leaderboard.json');
             if (response.ok) {
                 const data = await response.json();
                 this.scores = data.scores;
