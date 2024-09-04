@@ -6,6 +6,13 @@ class Player {
     constructor(game) {
         this.game = game;
         this.setDimensions();
+        this.activePowerUps = {
+            speedBoost: false,
+            shield: false,
+            multiShot: false,
+            timeFreeze: false,
+            // We don't need to add 'life' here as it's an instant effect
+        };
     }
 
     setDimensions() {

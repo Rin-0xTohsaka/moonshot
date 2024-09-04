@@ -73,6 +73,7 @@ class Game {
             { name: 'mars', src: 'assets/planets/mars.png' },
             { name: 'venus', src: 'assets/planets/venus.png' },
             { name: 'earth', src: 'assets/planets/earth.png' },
+            { name: 'life', src: 'assets/powerups/life.png' },
             // Add any other images you need to preload
         ];
         this.loadedImages = {};
@@ -203,7 +204,7 @@ class Game {
     }
 
     preloadPowerUpImages() {
-        const powerUpTypes = ['speedBoost', 'shield', 'multiShot', 'timeFreeze'];
+        const powerUpTypes = ['speedBoost', 'shield', 'multiShot', 'timeFreeze', 'life'];
         powerUpTypes.forEach(type => {
             const img = new Image();
             img.src = `assets/powerups/${type}.png`;

@@ -87,7 +87,7 @@ class UI {
 
         ctx.save();
         for (const [type, isActive] of Object.entries(activePowerUps)) {
-            if (isActive) {
+            if (isActive || type === 'life') { // Always show the life power-up icon
                 const powerUpImage = this.game.loadedImages[type];
                 if (powerUpImage) {
                     ctx.drawImage(powerUpImage, x, y, this.powerUpSize, this.powerUpSize);

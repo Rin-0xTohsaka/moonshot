@@ -2,7 +2,7 @@
 
 class PowerUp {
     static preloadImages() {
-        const types = ['speedBoost', 'shield', 'multiShot', 'timeFreeze'];
+        const types = ['speedBoost', 'shield', 'multiShot', 'timeFreeze', 'life']; // Add 'life' to the types array
         return Promise.all(types.map(type => {
             return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -27,7 +27,7 @@ class PowerUp {
     }
 
     getRandomType() {
-        const types = ['speedBoost', 'shield', 'multiShot', 'timeFreeze'];
+        const types = ['speedBoost', 'shield', 'multiShot', 'timeFreeze', 'life']; // Add 'life' to the types array
         return types[Math.floor(Math.random() * types.length)];
     }
 
@@ -59,21 +59,18 @@ class PowerUp {
                 player.activePowerUps.speedBoost = true;
                 setTimeout(() => {
                     player.activePowerUps.speedBoost = false;
-                    console.log('Speed boost deactivated');
                 }, 5000);
                 break;
             case 'shield':
                 player.activePowerUps.shield = true;
                 setTimeout(() => {
                     player.activePowerUps.shield = false;
-                    console.log('Shield deactivated');
                 }, 10000);
                 break;
             case 'multiShot':
                 player.activePowerUps.multiShot = true;
                 setTimeout(() => {
                     player.activePowerUps.multiShot = false;
-                    console.log('Multi-shot deactivated');
                 }, 8000);
                 break;
             case 'timeFreeze':
@@ -84,11 +81,14 @@ class PowerUp {
                     player.activePowerUps.timeFreeze = false;
                     this.game.asteroids.forEach(asteroid => asteroid.speed *= 2);
                     if (this.game.boss) this.game.boss.speed *= 2;
-                    console.log('Time freeze deactivated');
                 }, 5000);
                 break;
+            case 'life':
+                if (this.game.lives < 5) { // Limit maximum lives to 5
+                    this.game.lives++;
+                }
+                break;
         }
-        console.log(`${this.type} power-up activated`);
     }
 
     static spawnPowerUp(game) {
