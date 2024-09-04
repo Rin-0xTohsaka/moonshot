@@ -6,7 +6,7 @@ class Asteroid {
         this.setDimensions();
         this.x = Math.random() * (game.width - this.width);
         this.y = -this.height;
-        this.speed = Math.random() * 3 + 2; // Increased from Math.random() * 2 + 1
+        this.speed = Math.random() * 1.5 + 1; // Reduced from Math.random() * 3 + 2
         this.image = new Image();
         this.image.src = 'assets/planets/jupiter.png'; // Placeholder, we'll need to create asteroid sprites
         this.markedForDeletion = false;

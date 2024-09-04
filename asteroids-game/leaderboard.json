@@ -1,9 +1,0 @@
-{
-  "scores": [
-    {"name": "AAA", "score": 100},
-    {"name": "BBB", "score": 90},
-    {"name": "CCC", "score": 80},
-    {"name": "DDD", "score": 70},
-    {"name": "EEE", "score": 60}
-  ]
-}

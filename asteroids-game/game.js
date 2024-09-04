@@ -12,6 +12,7 @@ import Collision from './collision.js';
 import PowerUp from './powerup.js';
 import Bullet from './bullet.js'; // Add this import
 import BossBullet from './bossBullet.js';
+import Minion from './minion.js';
 
 class Game {
     constructor() {
@@ -34,6 +35,7 @@ class Game {
         this.asteroids = [];
         this.boss = null;
         this.powerUps = [];
+        this.minions = [];
         this.gameState = 'menu'; // 'menu', 'playing', 'levelTransition', 'gameOver'
 
         this.score = 0;
@@ -178,6 +180,7 @@ class Game {
         this.asteroids = [];
         this.boss = null;
         this.powerUps = [];
+        this.minions = [];
         this.score = 0;
         this.lives = 3;
         this.gameState = 'menu';
@@ -315,6 +318,7 @@ class Game {
                 }
             }
             this.updatePowerUps(deltaTime);
+            this.updateMinions(deltaTime);
             this.level.update(deltaTime);
             Collision.handleCollisions(this);
 
@@ -344,6 +348,7 @@ class Game {
             this.player.render(this.ctx);
             this.asteroids.forEach(asteroid => asteroid.render(this.ctx));
             this.powerUps.forEach(powerUp => powerUp.render(this.ctx));
+            this.minions.forEach(minion => minion.render(this.ctx));
             if (this.boss) {
                 this.boss.render(this.ctx);
                 // Render boss bullets
@@ -407,6 +412,11 @@ class Game {
         this.powerUps = this.powerUps.filter(powerUp => !powerUp.markedForDeletion);
     }
 
+    updateMinions(deltaTime) {
+        this.minions.forEach(minion => minion.update(deltaTime));
+        this.minions = this.minions.filter(minion => !minion.markedForDeletion);
+    }
+
     addAsteroid() {
         this.asteroids.push(new Asteroid(this));
     }
@@ -417,6 +427,10 @@ class Game {
 
     addPowerUp(x, y) {
         this.powerUps.push(new PowerUp(this, x, y));
+    }
+
+    addMinion() {
+        this.minions.push(new Minion(this));
     }
 
     gameOver() {

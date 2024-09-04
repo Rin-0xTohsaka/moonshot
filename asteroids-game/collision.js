@@ -11,7 +11,7 @@ class Collision {
     }
 
     static handleCollisions(game) {
-        const { player, asteroids, boss } = game;
+        const { player, asteroids, boss, minions } = game;
 
         // Player bullets with asteroids
         player.bullets.forEach(bullet => {
@@ -56,6 +56,36 @@ class Collision {
                 boss.hit(20); // Collision does more damage than bullets
             }
         }
+
+        // Player bullets with minions
+        player.bullets.forEach(bullet => {
+            minions.forEach(minion => {
+                if (this.checkCollision(bullet, minion)) {
+                    bullet.markedForDeletion = true;
+                    minion.hit(10);
+                }
+            });
+        });
+
+        // Player with minions
+        if (!player.activePowerUps.shield) {
+            minions.forEach(minion => {
+                if (this.checkCollision(player, minion)) {
+                    player.hit();
+                    minion.hit(20);
+                }
+            });
+        }
+
+        // Minion bullets with player
+        minions.forEach(minion => {
+            minion.bullets.forEach(bullet => {
+                if (this.checkCollision(bullet, player) && !player.activePowerUps.shield) {
+                    bullet.markedForDeletion = true;
+                    player.hit();
+                }
+            });
+        });
     }
 }
 

@@ -7,6 +7,12 @@ class UI {
         this.color = '#0ff';
         this.powerUpSize = 25; // Reduced from 30
         this.powerUpPadding = 8; // Reduced from 10
+        this.typewriterText = '';
+        this.typewriterIndex = 0;
+        this.typewriterSpeed = 0.5; // Reduced from 1 to 0.5 character per frame
+        this.lineHeight = 30; // Height between lines
+        this.maxLineWidth = 0; // Will be set in setFontSize method
+        this.typewriterComplete = false;
     }
 
     setFontSize() {
@@ -16,6 +22,7 @@ class UI {
             this.fontSize = 14;
         }
         this.fontFamily = "'PressStart2P', 'Courier New', monospace";
+        this.maxLineWidth = this.game.width * 0.8; // 80% of canvas width
     }
 
     render(ctx) {
@@ -25,17 +32,23 @@ class UI {
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
 
-        // Add glow effect
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 10;
 
-        // Render current game state
-        switch (this.game.gameState) {
+        switch (this.game.level.state) {
+            case 'intro':
+            case 'asteroids':
+            case 'boss':
+                this.renderPlayingState(ctx);
+                break;
+            case 'bossDefeated':
+                this.showBossDefeatedMessage(ctx);
+                break;
+            case 'levelIntro':
+                this.showLevelIntro(ctx, this.game.level.currentLevel + 1, this.game.level.planets[this.game.level.currentLevel]);
+                break;
             case 'menu':
                 this.showMainMenu(ctx);
-                break;
-            case 'playing':
-                this.renderPlayingState(ctx);
                 break;
             case 'gameOver':
                 this.showGameOver(ctx);
@@ -127,8 +140,31 @@ class UI {
         ctx.restore();
     }
 
-    showLevelIntro(level, planet) {
-        // Implement level intro screen
+    showLevelIntro(ctx, level, planet) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, this.game.width, this.game.height);
+        
+        ctx.fillStyle = this.color;
+        ctx.font = `${Math.floor(this.fontSize * 1.5)}px ${this.fontFamily}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`Level ${level}: ${planet}`, this.game.width / 2, this.game.height / 4);
+
+        const planetImage = this.game.loadedImages[planet.toLowerCase()];
+        if (planetImage) {
+            const imgSize = Math.min(150, this.game.width * 0.4);
+            ctx.drawImage(planetImage, 
+                this.game.width / 2 - imgSize / 2, 
+                this.game.height / 2 - imgSize / 2, 
+                imgSize, imgSize);
+        }
+
+        ctx.font = `${this.fontSize}px ${this.fontFamily}`;
+        ctx.fillText(`Mission: Clear the asteroid field`, this.game.width / 2, this.game.height * 3/4 - 20);
+        ctx.fillText(`and defeat the ${planet} boss!`, this.game.width / 2, this.game.height * 3/4 + 20);
+
+        ctx.restore();
     }
 
     showLevelComplete(level, planet) {
@@ -145,47 +181,40 @@ class UI {
         ctx.fillRect(0, 0, this.game.width, this.game.height);
         
         ctx.fillStyle = this.color;
-        ctx.font = `${Math.floor(this.fontSize * 1.8)}px ${this.fontFamily}`;
+        ctx.font = `${Math.floor(this.fontSize * 1.2)}px ${this.fontFamily}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('Boss Defeated!', this.game.width / 2, this.game.height / 4);
-        
-        const nextLevel = this.game.level.currentLevel + 1;
-        if (nextLevel <= this.game.level.planets.length) {
-            const nextPlanet = this.game.level.planets[nextLevel - 1].toLowerCase();
-            
-            // Use preloaded planet image
-            const planetImage = this.game.loadedImages[nextPlanet];
-            if (planetImage) {
-                const imgSize = Math.min(150, this.game.width * 0.4); // Responsive image size
-                ctx.drawImage(planetImage, 
-                    this.game.width / 2 - imgSize / 2, 
-                    this.game.height / 2 - imgSize / 2, 
-                    imgSize, imgSize);
-            }
-            
-            ctx.font = `${Math.floor(this.fontSize * 1.3)}px ${this.fontFamily}`;
-            ctx.fillText(`Next Destination: ${nextPlanet.charAt(0).toUpperCase() + nextPlanet.slice(1)}`, this.game.width / 2, this.game.height * 3/4 - 30);
-            
-            ctx.font = `${this.fontSize}px ${this.fontFamily}`;
-            const objective1 = `Level ${nextLevel} Objective: Clear the asteroid field`;
-            const objective2 = `and defeat the ${nextPlanet} boss!`;
-            
-            // Adjust text position for mobile
-            if (this.game.isMobile) {
-                ctx.fillText(objective1, this.game.width / 2, this.game.height * 3/4 + 8);
-                ctx.fillText(objective2, this.game.width / 2, this.game.height * 3/4 + 30);
-            } else {
-                ctx.fillText(`${objective1} ${objective2}`, this.game.width / 2, this.game.height * 3/4 + 20);
-            }
-        } else {
-            ctx.font = `${this.fontSize * 1.5}px ${this.fontFamily}`;
-            ctx.fillText("Congratulations!", this.game.width / 2, this.game.height / 2);
-            ctx.font = `${this.fontSize}px ${this.fontFamily}`;
-            ctx.fillText("You've cleared all levels!", this.game.width / 2, this.game.height / 2 + 40);
-        }
-        
+
+        // Display the full message immediately
+        const lines = this.wrapText(ctx, this.game.level.congratulationsMessage, this.maxLineWidth);
+        const totalHeight = lines.length * this.lineHeight;
+        let startY = (this.game.height - totalHeight) / 2;
+
+        lines.forEach((line, index) => {
+            ctx.fillText(line, this.game.width / 2, startY + index * this.lineHeight);
+        });
+
         ctx.restore();
+    }
+
+    wrapText(ctx, text, maxWidth) {
+        const words = text.split(' ');
+        const lines = [];
+        let currentLine = '';
+
+        words.forEach(word => {
+            const testLine = currentLine + (currentLine ? ' ' : '') + word;
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && currentLine !== '') {
+                lines.push(currentLine);
+                currentLine = word;
+            } else {
+                currentLine = testLine;
+            }
+        });
+        if (currentLine !== '') lines.push(currentLine);
+
+        return lines;
     }
 
     renderToggleButtons(ctx) {
@@ -237,6 +266,9 @@ class UI {
         ctx.fillText('Press ENTER to continue', this.game.width / 2, this.game.height - 50);
         ctx.restore();
     }
+
+    // Remove or comment out the typewriter-related methods
+    // startTypewriterEffect, updateTypewriter, isTypewriterComplete
 }
 
 export default UI;
