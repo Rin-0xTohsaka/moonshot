@@ -195,11 +195,11 @@ class Game {
 
         if (containerAspectRatio > this.aspectRatio) {
             // Container is wider than desired aspect ratio
-            canvasHeight = containerHeight - 10; // 5px padding top and bottom
+            canvasHeight = containerHeight - 4; // Reduced from 6 to 4
             canvasWidth = canvasHeight * this.aspectRatio;
         } else {
             // Container is taller than desired aspect ratio
-            canvasWidth = containerWidth - 20; // 10px padding left and right
+            canvasWidth = containerWidth - 12;
             canvasHeight = canvasWidth / this.aspectRatio;
         }
 

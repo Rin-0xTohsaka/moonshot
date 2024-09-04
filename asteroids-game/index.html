@@ -55,7 +55,7 @@
             justify-content: center;
             align-items: center;
             background-color: #000000;
-            padding: 10px;
+            padding: 5px; /* Reduced from 10px */
             box-sizing: border-box;
         }
 
@@ -68,14 +68,15 @@
             align-items: center;
             background-color: #000000;
             overflow: hidden;
-            padding: 5px 10px; /* Reduce top/bottom padding to 5px, keep left/right at 10px */
+            padding: 2px 5px; /* Reduced from 5px 10px */
         }
 
         #gameCanvas {
-            border: 2px solid #444444;
+            border: 2px solid #444444; /* Increased from 1px to 2px */
+            border-radius: 8px; /* Added rounded corners */
             image-rendering: pixelated;
-            max-width: calc(100% - 20px);  /* 10px padding on each side */
-            max-height: calc(100% - 10px); /* 5px padding on top and bottom */
+            max-width: calc(100% - 12px);  /* Adjusted to account for thicker border */
+            max-height: calc(100% - 4px); /* Increased from 6px to 4px */
             box-sizing: border-box;
         }
 
@@ -191,7 +192,7 @@
 
             .letterbox {
                 width: 100%;
-                height: 50vh;  /* Half of the viewport height for mobile */
+                height: 55vh;  /* Increased from 50vh to give more space on mobile */
             }
         }
     </style>
