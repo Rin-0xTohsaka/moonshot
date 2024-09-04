@@ -6,10 +6,7 @@ class Boss {
     constructor(game, level) {
         this.game = game;
         this.level = level;
-        this.width = game.isMobile ? game.width * 0.3 : 100; // Adjust size for mobile
-        this.height = this.width;
-        this.x = game.width / 2 - this.width / 2;
-        this.y = -this.height;
+        this.setSizeAndPosition();
         this.speed = 1.5; // Increased from 1
         this.health = 100 * level;
         this.maxHealth = this.health;
@@ -19,6 +16,18 @@ class Boss {
         this.image = new Image();
         this.image.src = `assets/alien-bosses/${this.getBossColor()}_boss.png`;
         this.markedForDeletion = false;
+    }
+
+    setSizeAndPosition() {
+        if (this.game.isMobile) {
+            // Smaller size for mobile, scaled based on screen width
+            this.width = this.game.width * 0.2; // 20% of screen width
+        } else {
+            this.width = 100; // Default size for desktop
+        }
+        this.height = this.width; // Keep it square
+        this.x = this.game.width / 2 - this.width / 2;
+        this.y = -this.height;
     }
 
     getBossColor() {
