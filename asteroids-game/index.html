@@ -195,6 +195,37 @@
                 height: 55vh;  /* Increased from 50vh to give more space on mobile */
             }
         }
+
+        .high-score-dialog {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 2px solid #0ff;
+            padding: 20px;
+            text-align: center;
+            color: #0ff;
+            font-family: 'PressStart2P', 'Courier New', monospace;
+        }
+
+        .high-score-dialog input {
+            display: block;
+            margin: 10px auto;
+            padding: 5px;
+            font-family: 'PressStart2P', 'Courier New', monospace;
+            text-align: center;
+            width: 100px;
+        }
+
+        .high-score-dialog button {
+            background-color: #0ff;
+            color: black;
+            border: none;
+            padding: 5px 10px;
+            font-family: 'PressStart2P', 'Courier New', monospace;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>

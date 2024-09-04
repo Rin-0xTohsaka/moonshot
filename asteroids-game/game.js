@@ -423,17 +423,34 @@ class Game {
         this.gameState = 'gameOver';
         this.audio.stopMusic();
         this.audio.playSound('explode');
-        this.leaderboard.addScore(this.score);
-        // Instead of calling UI method directly, set a flag
-        this.showGameOverScreen = true;
+        
+        if (this.leaderboard.isHighScore(this.score)) {
+            this.showHighScoreDialog();
+        } else {
+            this.showGameOverScreen = true;
+        }
     }
 
     gameWon() {
-        this.gameState = 'gameOver';
+        this.gameState = 'gameWon';
         this.audio.stopMusic();
         this.audio.playSound('victory');
-        this.leaderboard.addScore(this.score);
-        this.ui.showGameWon();
+        
+        if (this.leaderboard.isHighScore(this.score)) {
+            this.showHighScoreDialog();
+        } else {
+            this.ui.showGameWon();
+        }
+    }
+
+    showHighScoreDialog() {
+        this.gameState = 'highScoreDialog';
+        this.ui.showHighScoreDialog(this.score);
+    }
+
+    submitHighScore(name) {
+        this.leaderboard.addScore(name, this.score);
+        this.showGameOverScreen = true;
     }
 
     // Remove or comment out the applyCRTEffect method if it's not needed

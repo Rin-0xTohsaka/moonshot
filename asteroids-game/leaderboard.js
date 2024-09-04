@@ -2,40 +2,51 @@
 
 class Leaderboard {
     constructor() {
-        this.scores = JSON.parse(localStorage.getItem('spaceShooterScores')) || [];
+        this.scores = [];
+        this.maxEntries = 50;
+        this.localStorageKey = 'moonshot_leaderboard';
+        this.loadScores();
     }
 
-    addScore(score) {
-        this.scores.push(score);
-        this.scores.sort((a, b) => b - a);
-        this.scores = this.scores.slice(0, 10); // Keep only top 10 scores
-        this.saveScores();
+    loadScores() {
+        const storedScores = localStorage.getItem(this.localStorageKey);
+        if (storedScores) {
+            this.scores = JSON.parse(storedScores);
+        } else {
+            this.fetchScoresFromGitHub();
+        }
+    }
+
+    async fetchScoresFromGitHub() {
+        try {
+            const response = await fetch('https://raw.githubusercontent.com/your-username/your-repo/main/leaderboard.json');
+            if (response.ok) {
+                const data = await response.json();
+                this.scores = data.scores;
+                this.saveScores();
+            }
+        } catch (error) {
+            console.error('Failed to fetch leaderboard from GitHub:', error);
+        }
     }
 
     saveScores() {
-        localStorage.setItem('spaceShooterScores', JSON.stringify(this.scores));
+        localStorage.setItem(this.localStorageKey, JSON.stringify(this.scores));
+    }
+
+    addScore(name, score) {
+        this.scores.push({ name, score });
+        this.scores.sort((a, b) => b.score - a.score);
+        this.scores = this.scores.slice(0, this.maxEntries);
+        this.saveScores();
+    }
+
+    isHighScore(score) {
+        return this.scores.length < this.maxEntries || score > this.scores[this.scores.length - 1].score;
     }
 
     getTopScores(count = 10) {
         return this.scores.slice(0, count);
-    }
-
-    renderLeaderboard(ctx, x, y) {
-        ctx.save();
-        ctx.fillStyle = 'white';
-        ctx.font = '20px Courier';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-
-        ctx.fillText('Leaderboard', x, y);
-        y += 30;
-
-        this.getTopScores().forEach((score, index) => {
-            ctx.fillText(`${index + 1}. ${score}`, x, y);
-            y += 25;
-        });
-
-        ctx.restore();
     }
 }
 
