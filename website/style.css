@@ -339,3 +339,41 @@ footer a:hover {
     margin-left: auto; /* Moves the toggle to the right */
   }
 }
+
+.retro-button {
+  display: inline-block;
+  padding: 12px 24px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 16px;
+  color: #000000;
+  background-color: #00ff00;
+  border: none;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 0 #006400, 0 12px 0 rgba(0,0,0,0.1);
+  text-transform: uppercase;
+  image-rendering: pixelated;
+  letter-spacing: 2px;
+  line-height: 1.5;
+  text-shadow: 2px 2px 0 #006400;
+}
+
+.retro-button:hover {
+  background-color: #00dd00;
+  transform: translateY(2px);
+  box-shadow: 0 4px 0 #006400, 0 10px 0 rgba(0,0,0,0.1);
+}
+
+.retro-button:active {
+  background-color: #00bb00;
+  transform: translateY(6px);
+  box-shadow: 0 0 0 #006400, 0 6px 0 rgba(0,0,0,0.1);
+}
+
+#asteroids p {
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #fff;
+}
