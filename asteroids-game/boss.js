@@ -62,6 +62,8 @@ class Boss {
 
     render(ctx) {
         ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+        
+        // Render bullets
         this.bullets.forEach(bullet => bullet.render(ctx));
 
         // Health bar
@@ -75,6 +77,8 @@ class Boss {
         const bulletX = this.x + this.width / 2;
         const bulletY = this.y + this.height;
         this.bullets.push(new BossBullet(this.game, bulletX, bulletY));
+        // Optionally play a sound effect here
+        // this.game.audio.playSound('bosslaser');
     }
 
     hit(damage) {

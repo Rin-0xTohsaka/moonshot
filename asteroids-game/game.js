@@ -11,6 +11,7 @@ import Input from './input.js';
 import Collision from './collision.js';
 import PowerUp from './powerup.js';
 import Bullet from './bullet.js'; // Add this import
+import BossBullet from './bossBullet.js';
 
 class Game {
     constructor() {
@@ -173,6 +174,7 @@ class Game {
     async loadAssets() {
         try {
             await Bullet.preloadImage();
+            await BossBullet.preloadImage(); // Add this line
             this.assetsLoaded = true;
         } catch (error) {
             console.error('Failed to load assets:', error);
@@ -270,6 +272,9 @@ class Game {
             this.updateAsteroids(deltaTime);
             if (this.boss) {
                 this.boss.update(deltaTime);
+                // Update boss bullets
+                this.boss.bullets.forEach(bullet => bullet.update());
+                this.boss.bullets = this.boss.bullets.filter(bullet => !bullet.markedForDeletion);
                 if (this.boss.markedForDeletion) {
                     this.boss = null;
                 }
@@ -304,7 +309,11 @@ class Game {
             this.player.render(this.ctx);
             this.asteroids.forEach(asteroid => asteroid.render(this.ctx));
             this.powerUps.forEach(powerUp => powerUp.render(this.ctx));
-            if (this.boss) this.boss.render(this.ctx);
+            if (this.boss) {
+                this.boss.render(this.ctx);
+                // Render boss bullets
+                this.boss.bullets.forEach(bullet => bullet.render(this.ctx));
+            }
         }
 
         // Render UI elements

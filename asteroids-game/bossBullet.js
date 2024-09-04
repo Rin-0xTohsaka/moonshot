@@ -1,16 +1,37 @@
 // bossBullet.js
 
 class BossBullet {
+    static image = null;
+
+    static preloadImage() {
+        if (!BossBullet.image) {
+            BossBullet.image = new Image();
+            BossBullet.image.src = 'assets/projectiles/pixel_laser_red.png';
+            return new Promise((resolve, reject) => {
+                BossBullet.image.onload = resolve;
+                BossBullet.image.onerror = reject;
+            });
+        }
+        return Promise.resolve();
+    }
+
     constructor(game, x, y) {
         this.game = game;
         this.x = x;
         this.y = y;
-        this.width = 8;  // Adjust if needed to match the image size
-        this.height = 20;  // Adjust if needed to match the image size
-        this.speed = 3;
+        this.setDimensions();
+        this.speed = this.game.isMobile ? 2 : 3; // Slightly slower on mobile
         this.markedForDeletion = false;
-        this.image = new Image();
-        this.image.src = 'assets/projectiles/pixel_laser_red.png';
+    }
+
+    setDimensions() {
+        if (this.game.isMobile) {
+            this.width = this.game.width * 0.03;
+            this.height = this.game.width * 0.06;
+        } else {
+            this.width = 8;
+            this.height = 20;
+        }
     }
 
     update() {
@@ -21,13 +42,10 @@ class BossBullet {
     }
 
     render(ctx) {
-        if (this.image.complete) {
-            ctx.drawImage(this.image, this.x - this.width / 2, this.y, this.width, this.height);
-        } else {
-            // Fallback rendering if image hasn't loaded
-            ctx.fillStyle = 'red';
-            ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height);
+        if (BossBullet.image && BossBullet.image.complete) {
+            ctx.drawImage(BossBullet.image, this.x - this.width / 2, this.y, this.width, this.height);
         }
+        // Remove the fallback rendering
     }
 }
 
