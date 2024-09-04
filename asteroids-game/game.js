@@ -10,6 +10,7 @@ import Leaderboard from './leaderboard.js';
 import Input from './input.js';
 import Collision from './collision.js';
 import PowerUp from './powerup.js';
+import Bullet from './bullet.js'; // Add this import
 
 class Game {
     constructor() {
@@ -53,6 +54,10 @@ class Game {
 
         // Add this property to the Game class
         this.debugMode = false;
+
+        // In the Game class constructor, add:
+        this.assetsLoaded = false;
+        this.bullet = new Bullet(this, 0, 0); // Create a dummy bullet to trigger static initialization
     }
 
     loadFont() {
@@ -164,7 +169,18 @@ class Game {
         if (this.player) this.player.reset();
     }
 
-    init() {
+    // Add this method to the Game class
+    async loadAssets() {
+        try {
+            await Bullet.preloadImage();
+            this.assetsLoaded = true;
+        } catch (error) {
+            console.error('Failed to load assets:', error);
+        }
+    }
+
+    async init() {
+        await this.loadAssets();
         this.input.setupListeners();
         this.audio.loadSounds();
         this.resizeCanvas();
@@ -284,10 +300,12 @@ class Game {
         this.ctx.fillRect(0, 0, this.width, this.height);
 
         // Always render the game elements, regardless of game state
-        this.player.render(this.ctx);
-        this.asteroids.forEach(asteroid => asteroid.render(this.ctx));
-        this.powerUps.forEach(powerUp => powerUp.render(this.ctx));
-        if (this.boss) this.boss.render(this.ctx);
+        if (this.assetsLoaded) {
+            this.player.render(this.ctx);
+            this.asteroids.forEach(asteroid => asteroid.render(this.ctx));
+            this.powerUps.forEach(powerUp => powerUp.render(this.ctx));
+            if (this.boss) this.boss.render(this.ctx);
+        }
 
         // Render UI elements
         this.ui.render(this.ctx);
