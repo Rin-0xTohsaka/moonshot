@@ -13,6 +13,16 @@ class UI {
         this.lineHeight = 30; // Height between lines
         this.maxLineWidth = 0; // Will be set in setFontSize method
         this.typewriterComplete = false;
+        this.powerUpDescriptions = {
+            speedBoost: 'Speed: Faster',
+            shield: 'Shield: Protect',
+            multiShot: 'Gun: Multi',
+            timeFreeze: 'Clock: Slow',
+            life: 'Heart: +Life',
+            duplicate: 'Twin: Double',
+            laserShots: 'Laser: Spread',
+
+        };
     }
 
     setFontSize() {
@@ -86,20 +96,38 @@ class UI {
         const y = this.powerUpPadding;
 
         ctx.save();
+        ctx.font = `${Math.floor(this.fontSize * 0.8)}px ${this.fontFamily}`;
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+
         for (const [type, isActive] of Object.entries(activePowerUps)) {
-            if (isActive || type === 'life') { // Always show the life power-up icon
+            if (isActive || type === 'life') {
                 const powerUpImage = this.game.loadedImages[type];
+                const description = this.powerUpDescriptions[type];
+
                 if (powerUpImage) {
+                    // Calculate width of text for background
+                    const textWidth = ctx.measureText(description).width;
+
+                    // Draw semi-transparent background for text
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                    ctx.fillRect(x - textWidth - 10, y, textWidth + 5, this.powerUpSize);
+
+                    // Draw power-up icon
                     ctx.drawImage(powerUpImage, x, y, this.powerUpSize, this.powerUpSize);
+                    
+                    // Draw power-up description
+                    ctx.fillStyle = this.color;
+                    ctx.fillText(description, x - 5, y + this.powerUpSize / 2);
                 } else {
-                    // Fallback if image hasn't loaded (shouldn't happen with preloading)
+                    // Fallback if image hasn't loaded
                     ctx.fillStyle = 'white';
                     ctx.fillRect(x, y, this.powerUpSize, this.powerUpSize);
                     ctx.fillStyle = 'black';
                     ctx.font = '12px Arial';
                     ctx.fillText(type.charAt(0).toUpperCase(), x + 5, y + 20);
                 }
-                x -= this.powerUpSize + this.powerUpPadding;
+                x -= this.powerUpSize + this.powerUpPadding + ctx.measureText(description).width + 15;
             }
         }
         ctx.restore();

@@ -13,6 +13,8 @@ class Player {
             timeFreeze: false,
             // We don't need to add 'life' here as it's an instant effect
         };
+        this.duplicateShip = null;
+        this.laserShotsActive = false;
     }
 
     setDimensions() {
@@ -32,11 +34,15 @@ class Player {
         this.cooldownTime = 15; // frames
         this.image = new Image();
         this.image.src = 'assets/ships/pixel_ship.png';
+        this.duplicateShip = null;
+        this.laserShotsActive = false;
         this.activePowerUps = {
             speedBoost: false,
             shield: false,
             multiShot: false,
-            timeFreeze: false
+            timeFreeze: false,
+            duplicate: false,
+            laserShots: false
         };
     }
 
@@ -75,6 +81,11 @@ class Player {
         this.bullets.forEach(bullet => bullet.update(deltaTime));
         this.bullets = this.bullets.filter(bullet => !bullet.markedForDeletion);
         // console.log(`Player bullets: ${this.bullets.length}`); // Debug log
+
+        if (this.duplicateShip) {
+            this.duplicateShip.x = this.x + this.width + 10; // Position duplicate ship next to the main ship
+            this.duplicateShip.y = this.y;
+        }
     }
 
     render(ctx) {
@@ -89,18 +100,70 @@ class Player {
             bullet.render(ctx);
             // console.log(`Rendering bullet at (${bullet.x}, ${bullet.y})`); // Debug log
         });
+        if (this.duplicateShip) {
+            ctx.drawImage(
+                this.image,
+                Math.round(this.duplicateShip.x),
+                Math.round(this.duplicateShip.y),
+                this.width,
+                this.height
+            );
+        }
     }
 
     shoot() {
-        // console.log('Shoot method called');
-        const bulletX = this.x + this.width / 2;
-        const bulletY = this.y - 10;
-        const bullet = new Bullet(this.game, bulletX, bulletY);
-        this.bullets.push(bullet);
-        this.game.audio.playSound('laser');
-        // console.log(`Bullet created at (${bulletX}, ${bulletY})`);
+        if (this.laserShotsActive) {
+            this.shootLaserShots();
+        } else {
+            // console.log('Shoot method called');
+            const bulletX = this.x + this.width / 2;
+            const bulletY = this.y - 10;
+            const bullet = new Bullet(this.game, bulletX, bulletY);
+            this.bullets.push(bullet);
+            this.game.audio.playSound('laser');
+            // console.log(`Bullet created at (${bulletX}, ${bulletY})`);
+            }
+        if (this.duplicateShip) {
+            const bulletX = this.duplicateShip.x + this.width / 2;
+            const bulletY = this.duplicateShip.y - 10;
+            const bullet = new Bullet(this.game, bulletX, bulletY);
+            this.bullets.push(bullet);
+        }
     }
 
+    shootLaserShots() {
+        const bulletCount = 10;
+        const spreadAngle = Math.PI / 4; // 45 degrees spread
+
+        for (let i = 0; i < bulletCount; i++) {
+            const angle = (i / (bulletCount - 1) - 0.5) * spreadAngle;
+            const bulletX = this.x + this.width / 2;
+            const bulletY = this.y - 10;
+            const bullet = new Bullet(this.game, bulletX, bulletY, angle);
+            this.bullets.push(bullet);
+        }
+
+        this.game.audio.playSound('laser');
+    }
+
+    activateDuplicate() {
+        this.duplicateShip = { x: this.x + this.width + 10, y: this.y };
+        this.activePowerUps.duplicate = true;
+        setTimeout(() => {
+            this.duplicateShip = null;
+            this.activePowerUps.duplicate = false;
+        }, 10000); // 10 seconds duration
+    }
+
+    activateLaserShots() {
+        this.laserShotsActive = true;
+        this.activePowerUps.laserShots = true;
+        setTimeout(() => {
+            this.laserShotsActive = false;
+            this.activePowerUps.laserShots = false;
+        }, 8000); // 8 seconds duration
+    }
+    
     hit() {
         this.game.lives--;
         this.game.audio.playSound('hit');

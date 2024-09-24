@@ -38,7 +38,7 @@ class Collision {
             player.bullets.forEach(bullet => {
                 if (this.checkCollision(bullet, boss)) {
                     bullet.markedForDeletion = true;
-                    boss.hit(10); // Assuming each bullet does 10 damage
+                    boss.hit(10);
                 }
             });
 
@@ -53,7 +53,7 @@ class Collision {
             // Player with boss
             if (this.checkCollision(player, boss)) {
                 player.hit();
-                boss.hit(20); // Collision does more damage than bullets
+                boss.hit(20);
             }
         }
 

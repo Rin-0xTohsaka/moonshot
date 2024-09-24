@@ -2,7 +2,7 @@
 
 class PowerUp {
     static preloadImages() {
-        const types = ['speedBoost', 'shield', 'multiShot', 'timeFreeze', 'life']; // Add 'life' to the types array
+        const types = ['speedBoost', 'shield', 'multiShot', 'timeFreeze', 'life', 'duplicate', 'laserShots'];
         return Promise.all(types.map(type => {
             return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -27,7 +27,7 @@ class PowerUp {
     }
 
     getRandomType() {
-        const types = ['speedBoost', 'shield', 'multiShot', 'timeFreeze', 'life']; // Add 'life' to the types array
+        const types = ['speedBoost', 'shield', 'multiShot', 'timeFreeze', 'life', 'duplicate', 'laserShots'];
         return types[Math.floor(Math.random() * types.length)];
     }
 
@@ -87,6 +87,12 @@ class PowerUp {
                 if (this.game.lives < 5) { // Limit maximum lives to 5
                     this.game.lives++;
                 }
+                break;
+            case 'duplicate':
+                player.activateDuplicate();
+                break;
+            case 'laserShots':
+                player.activateLaserShots();
                 break;
         }
     }

@@ -15,7 +15,7 @@ class Bullet {
         return Promise.resolve();
     }
 
-    constructor(game, x, y) {
+    constructor(game, x, y, angle = 0) {
         this.game = game;
         this.x = x;
         this.y = y;
@@ -25,11 +25,13 @@ class Bullet {
         // Slightly reduce speed for mobile
         this.speed = this.game.isMobile ? 6 : 7;
         this.markedForDeletion = false;
+        this.angle = angle;
     }
 
     update(deltaTime) {
-        this.y -= this.speed;
-        if (this.y + this.height < 0) {
+        this.x += Math.sin(this.angle) * this.speed;
+        this.y -= Math.cos(this.angle) * this.speed;
+        if (this.y + this.height < 0 || this.x < 0 || this.x > this.game.width) {
             this.markedForDeletion = true;
         }
     }

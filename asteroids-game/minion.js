@@ -1,4 +1,8 @@
+// minion.js
+
 class Minion {
+    static types = ['blue', 'green', 'red', 'yellow', 'gama', 'prime', 'worker'];
+
     constructor(game) {
         this.game = game;
         this.width = 30;
@@ -10,14 +14,53 @@ class Minion {
         this.shootInterval = 120;
         this.shootTimer = 0;
         this.bullets = [];
+        this.type = Minion.types[Math.floor(Math.random() * Minion.types.length)];
         this.image = new Image();
-        this.image.src = 'assets/enemies/minion.png'; // Make sure to add this asset
+        this.image.src = `assets/enemies/${this.type}_minion.png`;
         this.markedForDeletion = false;
+        this.setMovementPattern();
+    }
+
+    setMovementPattern() {
+        this.movementType = Math.random();
+        if (this.movementType < 0.3) {
+            // Straight down
+            this.moveX = 0;
+            this.moveY = this.speed;
+        } else if (this.movementType < 0.6) {
+            // Diagonal
+            this.moveX = (Math.random() - 0.5) * this.speed;
+            this.moveY = this.speed;
+        } else if (this.movementType < 0.8) {
+            // Sine wave
+            this.amplitude = Math.random() * 100 + 50;
+            this.frequency = Math.random() * 0.02 + 0.01;
+            this.initialX = this.x;
+        } else {
+            // Circular
+            this.radius = Math.random() * 50 + 25;
+            this.angle = 0;
+            this.centerX = this.x;
+        }
     }
 
     update(deltaTime) {
-        this.y += this.speed;
-        this.x += Math.sin(this.game.lastTime / 1000) * 2; // Slight side-to-side movement
+        if (this.movementType < 0.6) {
+            // Straight or diagonal movement
+            this.x += this.moveX;
+            this.y += this.moveY;
+        } else if (this.movementType < 0.8) {
+            // Sine wave movement
+            this.y += this.speed;
+            this.x = this.initialX + Math.sin(this.y * this.frequency) * this.amplitude;
+        } else {
+            // Circular movement
+            this.angle += 0.02;
+            this.x = this.centerX + Math.cos(this.angle) * this.radius;
+            this.y += this.speed * 0.5;
+        }
+
+        // Ensure minion stays within game boundaries
         this.x = Math.max(0, Math.min(this.game.width - this.width, this.x));
 
         if (this.y > this.game.height) {

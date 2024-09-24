@@ -6,10 +6,19 @@ import congratulationsMessages from './congratulationsMessages.js';
 class Level {
     constructor(game) {
         this.game = game;
-        this.planets = ['Pluto', 'Neptune', 'Uranus', 'Saturn', 'Jupiter', 'Mars', 'Venus', 'Earth'];
+        this.planets = [
+            // Solar system planets
+            'Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune', 'Pluto',
+            // Additional planets
+            'Ocean World Alpha', 'Ocean World Beta', 'Ocean World Prime',
+            'TM 01', 'TM 02', 'TM 03',
+            'SPNV 01', 'SPNV 02',
+            'Dyson Alpha', 'Dyson Beta', 'Dyson Gamma', 'Dyson Omega', 'Dyson Prime',
+            'X Prime', 'X49 Prime', 'Terra'
+        ];
         this.transitionDuration = 180; // 3 seconds at 60 FPS
-        this.congratulationsDelay = 300; // 5 seconds at 60 FPS (increased from 180)
-        this.levelIntroDelay = 300; // 5 seconds at 60 FPS (increased from 180)
+        this.congratulationsDelay = 300; // 5 seconds at 60 FPS
+        this.levelIntroDelay = 300; // 5 seconds at 60 FPS
         this.reset();
     }
 
@@ -35,8 +44,8 @@ class Level {
             this.game.gameWon();
             return;
         }
-        this.maxAsteroids = this.currentLevel * 8;
-        this.maxMinions = Math.floor(this.currentLevel / 2);
+        this.maxAsteroids = Math.min(this.currentLevel * 8, 64);
+        this.maxMinions = Math.min(Math.floor(this.currentLevel / 2), 10);
         this.minionCount = 0;
         this.asteroidCount = 0;
         this.state = 'intro';
@@ -63,7 +72,7 @@ class Level {
                 // Spawn minions
                 this.minionTimer++;
                 if (this.minionTimer >= this.minionSpawnInterval && this.minionCount < this.maxMinions) {
-                    this.game.addMinion();
+                    this.game.minions.push(new Minion(this.game));
                     this.minionCount++;
                     this.minionTimer = 0;
                 }
@@ -98,14 +107,13 @@ class Level {
     }
 
     showLevelIntro() {
-        this.game.ui.showLevelIntro(this.game.ctx, this.currentLevel + 1, this.planets[this.currentLevel]);
+        this.game.ui.showLevelIntro(this.game.ctx, this.currentLevel, this.planets[this.currentLevel - 1]);
     }
 
     bossDefeated() {
         this.state = 'bossDefeated';
         this.transitionTimer = 0;
-        this.congratulationsMessage = congratulationsMessages[this.currentLevel - 1];
-        // Remove the call to startTypewriterEffect
+        this.congratulationsMessage = congratulationsMessages[this.currentLevel - 1] || "Great job! You've defeated another boss!";
     }
 }
 
