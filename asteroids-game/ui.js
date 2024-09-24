@@ -23,6 +23,12 @@ class UI {
             laserShots: 'Laser: Spread',
 
         };
+        this.menuItems = [
+            { name: 'Moonshot', url: 'https://moonshot-theta.vercel.app/#home' },
+            { name: 'Dexscreener', url: '' },
+            { name: 'Coingecko', url: '' }
+        ];
+        this.selectedMenuItem = 0;
     }
 
     setFontSize() {
@@ -149,6 +155,42 @@ class UI {
         ctx.font = `${this.fontSize}px ${this.fontFamily}`;
         ctx.fillText('PRESS ENTER TO START', this.game.width / 2, this.game.height / 2 + 30);
         ctx.restore();
+    }
+
+    showMenu(ctx) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, this.game.width, this.game.height);
+        
+        ctx.fillStyle = this.color;
+        ctx.font = `${Math.floor(this.fontSize * 1.5)}px ${this.fontFamily}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('MENU', this.game.width / 2, this.game.height / 4);
+
+        ctx.font = `${this.fontSize}px ${this.fontFamily}`;
+        this.menuItems.forEach((item, index) => {
+            ctx.fillStyle = index === this.selectedMenuItem ? '#ff0' : this.color;
+            ctx.fillText(item.name, this.game.width / 2, this.game.height / 2 + index * 40);
+        });
+
+        ctx.font = `${Math.floor(this.fontSize * 0.8)}px ${this.fontFamily}`;
+        ctx.fillStyle = this.color;
+        ctx.fillText('Use UP/DOWN to navigate, ENTER to select', this.game.width / 2, this.game.height * 3/4);
+        ctx.fillText('ESC to return to game', this.game.width / 2, this.game.height * 3/4 + 30);
+
+        ctx.restore();
+    }
+
+    navigateMenu(direction) {
+        this.selectedMenuItem = (this.selectedMenuItem + direction + this.menuItems.length) % this.menuItems.length;
+    }
+
+    selectMenuItem() {
+        const selectedItem = this.menuItems[this.selectedMenuItem];
+        if (selectedItem.url) {
+            window.open(selectedItem.url, '_blank');
+        }
     }
 
     showGameOver(ctx) {

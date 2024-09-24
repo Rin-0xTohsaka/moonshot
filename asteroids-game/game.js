@@ -5,11 +5,11 @@ import Asteroid from './asteroid.js';
 import Boss from './boss.js';
 import Level from './level.js';
 import UI from './ui.js';
-import GameAudio from './audio.js';  // Update this line
+import GameAudio from './audio.js';
 import Input from './input.js';
 import Collision from './collision.js';
 import PowerUp from './powerup.js';
-import Bullet from './bullet.js'; // Add this import
+import Bullet from './bullet.js';
 import BossBullet from './bossBullet.js';
 import Minion from './minion.js';
 
@@ -27,7 +27,7 @@ class Game {
         this.player = new Player(this);
         this.level = new Level(this);
         this.ui = new UI(this);
-        this.audio = new GameAudio();  // Update this line
+        this.audio = new GameAudio();
         this.input = new Input(this);
 
         this.asteroids = [];
@@ -35,6 +35,7 @@ class Game {
         this.powerUps = [];
         this.minions = [];
         this.gameState = 'menu'; // 'menu', 'playing', 'levelTransition', 'gameOver'
+        this.menuActive = false;
 
         this.score = 0;
         this.lives = 3;
@@ -53,10 +54,8 @@ class Game {
         this.loadFont();
         this.gameLoopStarted = false;
 
-        // Add this property to the Game class
         this.debugMode = false;
 
-        // In the Game class constructor, add:
         this.assetsLoaded = false;
         this.imagesToLoad = [
             { name: 'player', src: 'assets/ships/pixel_ship.png' },
@@ -66,6 +65,8 @@ class Game {
             { name: 'multiShot', src: 'assets/powerups/multiShot.png' },
             { name: 'timeFreeze', src: 'assets/powerups/timeFreeze.png' },
             { name: 'life', src: 'assets/powerups/life.png' },
+            { name: 'duplicate', src: 'assets/powerups/duplicate.png' },
+            { name: 'laserShots', src: 'assets/powerups/laserShots.png' },
             // Add all planet images
             { name: 'mercury', src: 'assets/planets/mercury.png' },
             { name: 'venus', src: 'assets/planets/venus.png' },
@@ -92,16 +93,11 @@ class Game {
             { name: 'x_prime', src: 'assets/planets/x_prime.png' },
             { name: 'x49_prime', src: 'assets/planets/x49_prime.png' },
             { name: 'terra', src: 'assets/planets/terra.png' },
-            { name: 'duplicate', src: 'assets/powerups/duplicate.png' },
-            { name: 'laserShots', src: 'assets/powerups/laserShots.png' },
         ];
         this.loadedImages = {};
         this.bullet = new Bullet(this, 0, 0); // Create a dummy bullet to trigger static initialization
 
         this.setupDesktopControls();
-
-        // console.log(`Is mobile: ${this.isMobile}`);
-        // console.log(`Canvas dimensions: ${this.width}x${this.height}`);
     }
 
     loadFont() {
@@ -140,7 +136,6 @@ class Game {
         handleTouch(rightBtn, 'ArrowRight', true);
         handleTouch(rightBtn, 'ArrowRight', false);
 
-        // Modified shoot button handling
         shootBtn.addEventListener('touchstart', (e) => {
             e.preventDefault();
             this.input.keys['Space'] = true;
@@ -156,7 +151,7 @@ class Game {
         pauseBtn.addEventListener('click', () => this.togglePause());
         soundBtn.addEventListener('click', () => this.toggleSound());
         musicBtn.addEventListener('click', () => this.toggleMusic());
-        menuBtn.addEventListener('click', () => this.showMenu());
+        menuBtn.addEventListener('click', () => this.toggleMenu());
     }
 
     setupDesktopControls() {
@@ -168,9 +163,8 @@ class Game {
         desktopPauseBtn.addEventListener('click', () => this.togglePause());
         desktopSoundBtn.addEventListener('click', () => this.toggleSound());
         desktopMusicBtn.addEventListener('click', () => this.toggleMusic());
-        desktopMenuBtn.addEventListener('click', () => this.showMenu());
+        desktopMenuBtn.addEventListener('click', () => this.toggleMenu());
 
-        // Update button states
         this.updateButtonStates();
     }
 
@@ -216,14 +210,17 @@ class Game {
         this.updateButtonStates();
     }
 
-    showMenu() {
-        // Implement menu logic
-        // For now, let's just redirect to the homepage
-        window.location.href = 'https://moonshot-theta.vercel.app/#home';
+    toggleMenu() {
+        this.menuActive = !this.menuActive;
+        if (this.menuActive) {
+            this.gameState = 'menu';
+        } else {
+            this.gameState = 'playing';
+        }
     }
 
     preloadPowerUpImages() {
-        const powerUpTypes = ['speedBoost', 'shield', 'multiShot', 'timeFreeze', 'life'];
+        const powerUpTypes = ['speedBoost', 'shield', 'multiShot', 'timeFreeze', 'life', 'duplicate', 'laserShots'];
         powerUpTypes.forEach(type => {
             const img = new Image();
             img.src = `assets/powerups/${type}.png`;
@@ -245,7 +242,6 @@ class Game {
         if (this.player) this.player.reset();
     }
 
-    // Add this method to the Game class
     async loadAssets() {
         const imagePromises = this.imagesToLoad.map(img => {
             return new Promise((resolve, reject) => {
@@ -264,11 +260,9 @@ class Game {
                 ...imagePromises,
                 Bullet.preloadImage(),
                 BossBullet.preloadImage(),
-                PowerUp.preloadImages() // We'll add this method to PowerUp class
+                PowerUp.preloadImages()
             ]);
             this.assetsLoaded = true;
-            // console.log('All assets loaded successfully');
-            // console.log('Loaded images:', Object.keys(this.loadedImages));
         } catch (error) {
             console.error('Failed to load assets:', error);
         }
@@ -282,15 +276,12 @@ class Game {
         window.addEventListener('resize', () => this.resizeCanvas());
         this.showMainMenu();
         
-        // Add a delay before starting the game loop
         setTimeout(() => {
-            // console.log('Starting game loop');
             requestAnimationFrame(this.gameLoop.bind(this));
-        }, 1000); // 1 second delay
+        }, 1000);
 
         this.waitForFontAndStart();
 
-        // Initialize button states
         const soundBtn = document.getElementById('soundBtn');
         const musicBtn = document.getElementById('musicBtn');
         soundBtn.classList.toggle('active', !this.audio.isSoundMuted);
@@ -313,13 +304,11 @@ class Game {
         let canvasWidth, canvasHeight;
 
         if (this.isMobile) {
-            // Mobile sizing logic
             canvasWidth = containerWidth;
             canvasHeight = containerHeight;
         } else {
-            // Desktop sizing logic
-            const maxWidth = 800; // Maximum width for desktop
-            const maxHeight = window.innerHeight * 0.9; // 90% of viewport height
+            const maxWidth = 800;
+            const maxHeight = window.innerHeight * 0.9;
 
             if (containerWidth / containerHeight > this.aspectRatio) {
                 canvasHeight = Math.min(maxHeight, containerHeight);
@@ -339,19 +328,16 @@ class Game {
         this.height = canvasHeight;
         if (this.player) this.player.setDimensions();
         if (this.ui) this.ui.setFontSize();
-
-        // console.log('Canvas dimensions:', this.width, this.height);
     }
 
     showMainMenu() {
         this.reset();
         this.gameState = 'menu';
-        this.ui.showMainMenu(this.ctx);  // Pass this.ctx here
+        this.ui.showMainMenu(this.ctx);
     }
 
     startGame() {
         this.reset();
-        // console.log('Game state changed to playing');
         this.gameState = 'playing';
         this.score = 0;
         this.lives = 3;
@@ -359,7 +345,7 @@ class Game {
         this.audio.startMusic();
         if (!this.gameLoopStarted) {
             this.gameLoopStarted = true;
-            this.gameLoop(0);  // Start the game loop
+            this.gameLoop(0);
         }
     }
 
@@ -380,7 +366,6 @@ class Game {
             this.updateAsteroids(deltaTime);
             if (this.boss) {
                 this.boss.update(deltaTime);
-                // Update boss bullets
                 this.boss.bullets.forEach(bullet => bullet.update());
                 this.boss.bullets = this.boss.bullets.filter(bullet => !bullet.markedForDeletion);
                 if (this.boss.markedForDeletion) {
@@ -392,31 +377,37 @@ class Game {
             this.level.update(deltaTime);
             Collision.handleCollisions(this);
 
-            // Spawn power-ups
             this.powerUpTimer++;
             if (this.powerUpTimer >= this.powerUpSpawnInterval) {
                 this.powerUps.push(PowerUp.spawnPowerUp(this));
                 this.powerUpTimer = 0;
             }
 
-            // Check for collisions with power-ups
             this.powerUps.forEach(powerUp => {
                 if (Collision.checkCollision(this.player, powerUp)) {
                     powerUp.activate();
                     powerUp.markedForDeletion = true;
                 }
             });
+        } else if (this.gameState === 'menu') {
+            // Handle menu navigation
+            if (this.input.keys.ArrowUp) {
+                this.ui.navigateMenu(-1);
+                this.input.keys.ArrowUp = false;
+            } else if (this.input.keys.ArrowDown) {
+                this.ui.navigateMenu(1);
+                this.input.keys.ArrowDown = false;
+            } else if (this.input.keys.Enter) {
+                this.ui.selectMenuItem();
+                this.input.keys.Enter = false;
+            }
         }
     }
 
     render() {
-        // console.log('Rendering frame');
-        // console.log('Game state:', this.gameState);
-        // console.log('Assets loaded:', this.assetsLoaded);
         this.ctx.fillStyle = 'black';
         this.ctx.fillRect(0, 0, this.width, this.height);
 
-        // Always render the game elements, regardless of game state
         if (this.assetsLoaded) {
             this.player.render(this.ctx);
             this.asteroids.forEach(asteroid => asteroid.render(this.ctx));
@@ -424,22 +415,18 @@ class Game {
             this.minions.forEach(minion => minion.render(this.ctx));
             if (this.boss) {
                 this.boss.render(this.ctx);
-                // Render boss bullets
                 this.boss.bullets.forEach(bullet => bullet.render(this.ctx));
             }
         }
 
-        // Render UI elements
         this.ui.render(this.ctx);
 
-        // Render game title in the top letterbox
-        this.ctx.fillStyle = '#0ff'; // Cyan color to match the UI
+        this.ctx.fillStyle = '#0ff';
         this.ctx.font = `${Math.floor(this.ui.fontSize * 1.5)}px ${this.ui.fontFamily}`;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'top';
-        this.ctx.fillText('MOONSHOT', this.width / 2, 10); // 10 pixels from the top
+        this.ctx.fillText('MOONSHOT', this.width / 2, 10);
 
-        // If the game is paused, render a semi-transparent overlay with "PAUSED" text
         if (this.gameState === 'paused') {
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
             this.ctx.fillRect(0, 0, this.width, this.height);
@@ -450,17 +437,14 @@ class Game {
             this.ctx.fillText('PAUSED', this.width / 2, this.height / 2);
         }
 
-        // Show boss defeated message
         if (this.level.state === 'bossDefeated') {
             this.ui.showBossDefeatedMessage(this.ctx);
         }
 
-        // Show game over screen if flag is set
         if (this.showGameOverScreen) {
             this.ui.showGameOver(this.ctx);
         }
 
-        // Debug mode rendering
         if (this.debugMode) {
             this.ctx.fillStyle = 'red';
             this.player.bullets.forEach(bullet => {
@@ -468,17 +452,13 @@ class Game {
             });
         }
 
-        if (this.assetsLoaded) {
-            // console.log('Player position:', this.player.x, this.player.y);
-            // console.log('Number of asteroids:', this.asteroids.length);
-            // console.log('Boss:', this.boss ? 'present' : 'not present');
+        if (this.menuActive) {
+            this.ui.showMenu(this.ctx);
         }
     }
 
-    // Move these methods outside of the render method
     toggleDebugMode() {
         this.debugMode = !this.debugMode;
-        // console.log(`Debug mode: ${this.debugMode ? 'ON' : 'OFF'}`);
     }
 
     updateAsteroids(deltaTime) {
@@ -525,25 +505,6 @@ class Game {
         this.audio.playSound('victory');
         this.ui.showGameWon();
     }
-
-    // Remove or comment out the applyCRTEffect method if it's not needed
-    /*
-    applyCRTEffect() {
-        const originalImageData = this.ctx.getImageData(0, 0, this.width, this.height);
-        const data = originalImageData.data;
-
-        for (let y = 0; y < this.height; y += 3) {
-            for (let x = 0; x < this.width; x++) {
-                const index = (y * this.width + x) * 4;
-                data[index] = data[index] * 1.2;  // Red
-                data[index + 1] = data[index + 1] * 0.9;  // Green
-                data[index + 2] = data[index + 2] * 0.9;  // Blue
-            }
-        }
-
-        this.ctx.putImageData(originalImageData, 0, 0);
-    }
-    */
 }
 
 export default Game;

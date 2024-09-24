@@ -178,6 +178,39 @@
             width: 40px;
         }
 
+        .menu-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .menu-item {
+            font-family: 'PressStart2P', 'Courier New', monospace;
+            font-size: 18px;
+            color: #0ff;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .menu-item:hover, .menu-item.selected {
+            color: #ff0;
+        }
+
+        @media (max-width: 768px) {
+            .menu-item {
+                font-size: 14px;
+            }
+        }
+
         .desktop-controls {
             display: none;
             position: absolute;

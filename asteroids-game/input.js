@@ -16,6 +16,12 @@ class Input {
         } else {
             this.game.canvas.addEventListener('click', this.handleClick.bind(this));
         }
+
+        window.addEventListener('keydown', e => {
+            if (e.code === 'Escape') {
+                this.game.toggleMenu();
+            }
+        });
     }
 
     setupTouchListeners() {
