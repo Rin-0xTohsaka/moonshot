@@ -1,7 +1,7 @@
+// level.js
+
 import Minion from './minion.js';
 import congratulationsMessages from './congratulationsMessages.js';
-
-// level.js
 
 class Level {
     constructor(game) {
@@ -16,9 +16,10 @@ class Level {
             'Dyson Alpha', 'Dyson Beta', 'Dyson Gamma', 'Dyson Omega', 'Dyson Prime',
             'X Prime', 'X49 Prime', 'Terra'
         ];
-        this.transitionDuration = 180; // 3 seconds at 60 FPS
-        this.congratulationsDelay = 300; // 5 seconds at 60 FPS
+        this.transitionDuration = 420; // 7 seconds at 60 FPS
+        this.congratulationsDelay = 420; // 7 seconds at 60 FPS
         this.levelIntroDelay = 300; // 5 seconds at 60 FPS
+        this.minionSpawnInterval = 180; // Add this line (3 seconds at 60 FPS)
         this.reset();
     }
 
@@ -34,7 +35,6 @@ class Level {
         this.maxMinions = 0;
         this.minionTimer = 0;
         this.congratulationsMessage = '';
-        this.minionSpawnInterval = 180; // Add this line (3 seconds at 60 FPS)
     }
 
     start() {
@@ -92,9 +92,13 @@ class Level {
             case 'bossDefeated':
                 this.transitionTimer++;
                 if (this.transitionTimer >= this.congratulationsDelay) {
-                    this.state = 'levelIntro';
-                    this.transitionTimer = 0;
-                    this.showLevelIntro();
+                    if (this.currentLevel < this.planets.length) {
+                        this.state = 'levelIntro';
+                        this.transitionTimer = 0;
+                        this.showLevelIntro();
+                    } else {
+                        this.game.gameWon();
+                    }
                 }
                 break;
             case 'levelIntro':

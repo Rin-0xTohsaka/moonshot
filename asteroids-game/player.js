@@ -6,15 +6,16 @@ class Player {
     constructor(game) {
         this.game = game;
         this.setDimensions();
+        this.bullets = []; // Initialize bullets array in constructor
         this.activePowerUps = {
             speedBoost: false,
             shield: false,
             multiShot: false,
             timeFreeze: false,
-            // We don't need to add 'life' here as it's an instant effect
         };
         this.duplicateShip = null;
         this.laserShotsActive = false;
+        this.reset(); // Call reset to initialize other properties
     }
 
     setDimensions() {
@@ -27,11 +28,10 @@ class Player {
 
     reset() {
         this.setDimensions();
-        // console.log('Player reset. Position:', this.x, this.y);
-        this.speed = 7; // Increased from 5
-        this.bullets = [];
+        this.speed = 7;
+        this.bullets = []; // Reset bullets array
         this.cooldown = 0;
-        this.cooldownTime = 15; // frames
+        this.cooldownTime = 15;
         this.image = new Image();
         this.image.src = 'assets/ships/pixel_ship.png';
         this.duplicateShip = null;
@@ -57,7 +57,6 @@ class Player {
 
         // Shooting
         if (this.game.input.keys.Space && this.cooldown === 0) {
-            // console.log('Attempting to shoot'); // Add this line
             this.shoot();
             this.cooldown = this.cooldownTime;
         }
@@ -68,9 +67,9 @@ class Player {
 
         // Apply power-up effects
         if (this.activePowerUps.speedBoost) {
-            this.speed = 10; // Increased from 7.5
+            this.speed = 10;
         } else {
-            this.speed = 7; // Normal speed, increased from 5
+            this.speed = 7;
         }
 
         if (this.activePowerUps.multiShot && this.game.input.keys.Space && this.cooldown === 0) {
@@ -80,10 +79,9 @@ class Player {
         // Update bullets
         this.bullets.forEach(bullet => bullet.update(deltaTime));
         this.bullets = this.bullets.filter(bullet => !bullet.markedForDeletion);
-        // console.log(`Player bullets: ${this.bullets.length}`); // Debug log
 
         if (this.duplicateShip) {
-            this.duplicateShip.x = this.x + this.width + 10; // Position duplicate ship next to the main ship
+            this.duplicateShip.x = this.x + this.width + 10;
             this.duplicateShip.y = this.y;
         }
     }
@@ -98,7 +96,6 @@ class Player {
         );
         this.bullets.forEach(bullet => {
             bullet.render(ctx);
-            // console.log(`Rendering bullet at (${bullet.x}, ${bullet.y})`); // Debug log
         });
         if (this.duplicateShip) {
             ctx.drawImage(
@@ -115,14 +112,12 @@ class Player {
         if (this.laserShotsActive) {
             this.shootLaserShots();
         } else {
-            // console.log('Shoot method called');
             const bulletX = this.x + this.width / 2;
             const bulletY = this.y - 10;
             const bullet = new Bullet(this.game, bulletX, bulletY);
             this.bullets.push(bullet);
             this.game.audio.playSound('laser');
-            // console.log(`Bullet created at (${bulletX}, ${bulletY})`);
-            }
+        }
         if (this.duplicateShip) {
             const bulletX = this.duplicateShip.x + this.width / 2;
             const bulletY = this.duplicateShip.y - 10;

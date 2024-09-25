@@ -76,10 +76,6 @@ class Input {
 
     handleKeyDown(e) {
         this.keys[e.code] = true;
-        // console.log(`Key pressed: ${e.code}`); // Add this line
-        if (e.code === 'KeyG') {
-            this.toggleGodMode();
-        }
         if (e.code === 'Enter') {
             this.handleEnterKey();
         }
@@ -109,7 +105,9 @@ class Input {
     }
 
     handleEnterKey() {
-        if (this.game.gameState === 'menu') {
+        if (this.game.gameState === 'openingCrawl') {
+            this.game.startGame();
+        } else if (this.game.gameState === 'menu') {
             this.game.startGame();
         } else if (this.game.gameState === 'gameOver') {
             this.game.showMainMenu();

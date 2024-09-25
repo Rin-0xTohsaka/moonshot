@@ -34,7 +34,8 @@ class Game {
         this.boss = null;
         this.powerUps = [];
         this.minions = [];
-        this.gameState = 'menu'; // 'menu', 'playing', 'levelTransition', 'gameOver'
+        this.gameState = 'openingCrawl'; // Change initial state to 'openingCrawl'
+        this.crawlStartTime = null; // Added to track opening crawl start time
         this.menuActive = false;
 
         this.score = 0;
@@ -43,6 +44,9 @@ class Game {
         this.lastTime = 0;
         this.powerUpSpawnInterval = 1000; // Spawn a power-up every 1000 frames
         this.powerUpTimer = 0;
+
+        this.showingInitialBriefing = true;
+        this.showingStoryRecap = false;
 
         this.preloadPowerUpImages();
 
@@ -274,18 +278,21 @@ class Game {
         this.audio.loadSounds();
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
-        this.showMainMenu();
         
-        setTimeout(() => {
-            requestAnimationFrame(this.gameLoop.bind(this));
-        }, 1000);
-
-        this.waitForFontAndStart();
-
+        // Start the game loop
+        this.gameLoop(0);
+    
+        //this.waitForFontAndStart();
+    
         const soundBtn = document.getElementById('soundBtn');
         const musicBtn = document.getElementById('musicBtn');
         soundBtn.classList.toggle('active', !this.audio.isSoundMuted);
         musicBtn.classList.toggle('active', !this.audio.isMusicMuted);
+    }
+
+    showInitialBriefing() {
+        this.gameState = 'briefing';
+        this.ui.showInitialBriefing(this.ctx);
     }
 
     waitForFontAndStart() {
@@ -337,31 +344,46 @@ class Game {
     }
 
     startGame() {
-        this.reset();
-        this.gameState = 'playing';
-        this.score = 0;
-        this.lives = 3;
-        this.level.start();
-        this.audio.startMusic();
-        if (!this.gameLoopStarted) {
-            this.gameLoopStarted = true;
-            this.gameLoop(0);
+        if (this.gameState === 'openingCrawl') {
+            this.gameState = 'playing';
+            this.level.start();
+            this.crawlStartTime = null; // Reset crawlStartTime
+        } else {
+            this.reset();
+            this.gameState = 'playing';
+            this.score = 0;
+            this.lives = 3;
+            this.level.start();
+            this.audio.startMusic();
+            if (!this.gameLoopStarted) {
+                this.gameLoopStarted = true;
+                this.gameLoop(0);
+            }
         }
     }
 
     gameLoop(timestamp) {
+        if (!this.crawlStartTime && this.gameState === 'openingCrawl') {
+            this.crawlStartTime = timestamp;
+        }
+
         const deltaTime = timestamp - this.lastTime;
         this.lastTime = timestamp;
 
         this.ctx.clearRect(0, 0, this.width, this.height);
         this.update(deltaTime);
-        this.render();
+        this.render(timestamp - this.crawlStartTime); // Pass elapsedTime to render
 
         requestAnimationFrame(this.gameLoop.bind(this));
     }
 
     update(deltaTime) {
-        if (this.gameState === 'playing') {
+        if (this.gameState === 'openingCrawl') {
+            if (this.input.keys.Enter) {
+                this.startGame();
+            }
+            return;
+        } else if (this.gameState === 'playing') {
             this.player.update(deltaTime);
             this.updateAsteroids(deltaTime);
             if (this.boss) {
@@ -376,13 +398,13 @@ class Game {
             this.updateMinions(deltaTime);
             this.level.update(deltaTime);
             Collision.handleCollisions(this);
-
+    
             this.powerUpTimer++;
             if (this.powerUpTimer >= this.powerUpSpawnInterval) {
                 this.powerUps.push(PowerUp.spawnPowerUp(this));
                 this.powerUpTimer = 0;
             }
-
+    
             this.powerUps.forEach(powerUp => {
                 if (Collision.checkCollision(this.player, powerUp)) {
                     powerUp.activate();
@@ -401,13 +423,48 @@ class Game {
                 this.ui.selectMenuItem();
                 this.input.keys.Enter = false;
             }
+        } else if (this.gameState === 'briefing' || this.level.state === 'intro' || this.level.state === 'bossDefeated') {
+            if (this.input.keys.Enter) {
+                this.input.keys.Enter = false; // Reset the key state
+                if (this.gameState === 'briefing') {
+                    this.startGame();
+                } else if (this.level.state === 'intro') {
+                    this.level.state = 'asteroids';
+                    this.level.transitionTimer = 0;
+                } else if (this.level.state === 'bossDefeated') {
+                    if (this.level.currentLevel < this.level.planets.length) {
+                        this.level.state = 'levelIntro';
+                        this.level.transitionTimer = 0;
+                        this.level.showLevelIntro();
+                    } else {
+                        this.gameWon();
+                    }
+                }
+            }
+        } else if (this.gameState === 'storyRecap') {
+            if (this.input.keys.Enter) {
+                this.gameState = 'playing';
+                this.showingStoryRecap = false;
+            }
+        }
+
+        // Allow skipping the opening crawl
+        if (this.gameState === 'openingCrawl' && this.input.keys.Enter) {
+            this.gameState = 'playing';
+            this.level.start();
+            this.input.keys.Enter = false;
         }
     }
 
-    render() {
+    render(elapsedTime) { // Updated to accept elapsedTime
+        if (this.gameState === 'openingCrawl') {
+            this.ui.showOpeningCrawl(this.ctx, elapsedTime); // Pass elapsedTime to UI
+            return;
+        }
+    
         this.ctx.fillStyle = 'black';
         this.ctx.fillRect(0, 0, this.width, this.height);
-
+    
         if (this.assetsLoaded) {
             this.player.render(this.ctx);
             this.asteroids.forEach(asteroid => asteroid.render(this.ctx));
@@ -418,15 +475,21 @@ class Game {
                 this.boss.bullets.forEach(bullet => bullet.render(this.ctx));
             }
         }
-
+    
+        if (this.gameState === 'briefing') {
+            this.ui.showInitialBriefing(this.ctx);
+        } else if (this.gameState === 'storyRecap') {
+            this.ui.showStoryRecap(this.ctx, this.level.currentLevel);
+        }
+    
         this.ui.render(this.ctx);
-
+    
         this.ctx.fillStyle = '#0ff';
         this.ctx.font = `${Math.floor(this.ui.fontSize * 1.5)}px ${this.ui.fontFamily}`;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'top';
         this.ctx.fillText('MOONSHOT', this.width / 2, 10);
-
+    
         if (this.gameState === 'paused') {
             this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
             this.ctx.fillRect(0, 0, this.width, this.height);
@@ -436,25 +499,37 @@ class Game {
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText('PAUSED', this.width / 2, this.height / 2);
         }
-
+    
         if (this.level.state === 'bossDefeated') {
             this.ui.showBossDefeatedMessage(this.ctx);
         }
-
+    
         if (this.showGameOverScreen) {
             this.ui.showGameOver(this.ctx);
         }
-
+    
         if (this.debugMode) {
             this.ctx.fillStyle = 'red';
             this.player.bullets.forEach(bullet => {
                 this.ctx.fillRect(bullet.x - 2, bullet.y - 2, 4, 4);
             });
         }
-
+    
         if (this.menuActive) {
             this.ui.showMenu(this.ctx);
         }
+    }
+
+    levelComplete() {
+        this.gameState = 'storyRecap';
+        this.showingStoryRecap = true;
+    }
+
+    gameWon() {
+        this.gameState = 'gameWon';
+        this.audio.stopMusic();
+        this.audio.playSound('victory');
+        this.ui.showGameWon(this.ctx);
     }
 
     toggleDebugMode() {
@@ -499,12 +574,7 @@ class Game {
         this.showGameOverScreen = true;
     }
 
-    gameWon() {
-        this.gameState = 'gameWon';
-        this.audio.stopMusic();
-        this.audio.playSound('victory');
-        this.ui.showGameWon();
-    }
+    // Removed duplicate gameWon method
 }
 
 export default Game;
