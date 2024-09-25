@@ -51,10 +51,14 @@ class UI {
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 10;
 
-        switch (this.game.level.state) {
-            case 'intro':
-            case 'asteroids':
-            case 'boss':
+        switch (this.game.gameState) {
+            case 'openingCrawl':
+                this.showOpeningCrawl(ctx, this.game.lastTime - this.game.crawlStartTime);
+                break;
+            case 'firstLevelIntro':
+                this.showLevelIntro(ctx, 1, this.game.level.planets[0]);
+                break;
+            case 'playing':
                 this.renderPlayingState(ctx);
                 break;
             case 'bossDefeated':
@@ -77,9 +81,6 @@ class UI {
                 break;
             case 'briefing':
                 this.showInitialBriefing(ctx);
-                break;
-            case 'openingCrawl':
-                this.showOpeningCrawl(ctx, this.game.level.elapsedCrawlTime); // Updated to pass elapsedTime
                 break;
             default:
                 break;
@@ -105,7 +106,7 @@ class UI {
         // this.renderToggleButtons(ctx);
 
         // Show boss defeated message
-        if (this.game.level.state === 'bossDefeated') {
+        if (this.game.gameState === 'bossDefeated') {
             this.showBossDefeatedMessage(ctx);
         }
     }
@@ -275,7 +276,7 @@ class UI {
         const startY = this.game.height;
 
         // Scroll speed (pixels per millisecond)
-        const scrollSpeed = 0.03; // Adjusted for slower scroll
+        const scrollSpeed = 0.04; // Adjusted for slower scroll
 
         // Calculate current Y position
         const currentY = startY - (elapsedTime * scrollSpeed);
@@ -406,7 +407,7 @@ class UI {
         });
 
         ctx.font = `${Math.floor(this.fontSize * 0.8)}px ${this.fontFamily}`;
-        ctx.fillText('Press ENTER to continue', this.game.width / 2, this.game.height - 30);
+        ctx.fillText('Prepare for next level', this.game.width / 2, this.game.height - 30);
 
         ctx.restore();
     }
@@ -518,7 +519,7 @@ class UI {
         });
 
         ctx.font = `${Math.floor(this.fontSize * 0.8)}px ${this.fontFamily}`;
-        ctx.fillText('Press ENTER to continue', this.game.width / 2, this.game.height - 30);
+        ctx.fillText('Prepare for next level', this.game.width / 2, this.game.height - 30);
 
         ctx.restore();
     }

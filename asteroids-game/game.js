@@ -34,7 +34,7 @@ class Game {
         this.boss = null;
         this.powerUps = [];
         this.minions = [];
-        this.gameState = 'openingCrawl'; // Change initial state to 'openingCrawl'
+        this.gameState = 'openingCrawl'; // Initial state changed to 'openingCrawl'
         this.crawlStartTime = null; // Added to track opening crawl start time
         this.menuActive = false;
 
@@ -380,6 +380,12 @@ class Game {
     update(deltaTime) {
         if (this.gameState === 'openingCrawl') {
             if (this.input.keys.Enter) {
+                this.startFirstLevelIntro();
+            }
+            return;
+        } else if (this.gameState === 'firstLevelIntro') {
+            this.firstLevelIntroTimer += deltaTime;
+            if (this.firstLevelIntroTimer >= this.firstLevelIntroDuration) {
                 this.startGame();
             }
             return;
@@ -450,18 +456,22 @@ class Game {
 
         // Allow skipping the opening crawl
         if (this.gameState === 'openingCrawl' && this.input.keys.Enter) {
-            this.gameState = 'playing';
-            this.level.start();
+            this.startFirstLevelIntro();
             this.input.keys.Enter = false;
         }
     }
 
     render(elapsedTime) { // Updated to accept elapsedTime
         if (this.gameState === 'openingCrawl') {
-            this.ui.showOpeningCrawl(this.ctx, elapsedTime); // Pass elapsedTime to UI
+            this.ui.showOpeningCrawl(this.ctx, elapsedTime);
             return;
         }
-    
+
+        if (this.gameState === 'firstLevelIntro') {
+            this.ui.showLevelIntro(this.ctx, 1, this.level.planets[0]);
+            return;
+        }
+
         this.ctx.fillStyle = 'black';
         this.ctx.fillRect(0, 0, this.width, this.height);
     
@@ -517,6 +527,31 @@ class Game {
     
         if (this.menuActive) {
             this.ui.showMenu(this.ctx);
+        }
+    }
+
+    startFirstLevelIntro() {
+        this.gameState = 'firstLevelIntro';
+        this.firstLevelIntroTimer = 0;
+        this.crawlStartTime = null;
+    }
+
+    startGame() {
+        if (this.gameState === 'firstLevelIntro') {
+            this.gameState = 'playing';
+            this.level.start();
+            this.firstLevelIntroTimer = 0;
+        } else {
+            this.reset();
+            this.gameState = 'playing';
+            this.score = 0;
+            this.lives = 3;
+            this.level.start();
+            this.audio.startMusic();
+            if (!this.gameLoopStarted) {
+                this.gameLoopStarted = true;
+                this.gameLoop(0);
+            }
         }
     }
 
